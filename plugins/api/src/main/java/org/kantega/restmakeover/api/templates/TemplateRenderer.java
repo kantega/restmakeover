@@ -1,4 +1,4 @@
-package org.kantega.metrics.api.templates;
+package org.kantega.restmakeover.api.templates;
 
 import java.io.Writer;
 import java.nio.charset.Charset;
