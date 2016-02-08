@@ -21,7 +21,9 @@ public final class DbInitializer {
     private static final List<String> STATEMENTS = Arrays.asList(
             "create table blog (blogid  integer NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)," +
                     " blogname varchar(255) NOT NULL UNIQUE, " +
-                    " color varchar(7) )",
+                    " color varchar(7)," +
+                    " lastmodified timestamp NOT NULL)"
+            ,
 
             "create table blogpost (blogpostid  integer NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)," +
                     " blogid integer NOT NULL,  " +

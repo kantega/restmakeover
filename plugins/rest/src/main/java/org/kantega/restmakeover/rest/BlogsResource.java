@@ -9,11 +9,11 @@ import org.kantega.restmakeover.api.dao.BlogPostDao;
 import org.kantega.restmakeover.rest.model.*;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -34,8 +34,11 @@ public class BlogsResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Blog> listBlogs() {
-        return blogDao.getAllBlogs();
+    public Response listBlogs(@Context Request request) {
+
+
+        return Response.ok(blogDao.getAllBlogs())
+                .build();
     }
 
     @POST
@@ -52,8 +55,10 @@ public class BlogsResource {
     @GET
     @Path("{blogName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Blog getBlog(@PathParam("blogName")String blogName) {
-        return blogDao.getBlogByName(blogName);
+    public Response getBlog(@PathParam("blogName")String blogName) {
+
+        return Response.ok(blogDao.getBlogByName(blogName))
+                .build();
     }
 
     @GET
@@ -82,8 +87,13 @@ public class BlogsResource {
     @GET
     @Path("{blogName}/{postTitle}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Post getPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle) {
-        return new Post(blogPostDao.getBlogPost(blogDao.getBlogByName(blogName), postTitle));
+    public Response getBlogPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle) {
+        Blog blog = blogDao.getBlogByName(blogName);
+        BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
+
+        return Response.ok(new Post(blogPost))
+                .cacheControl(new CacheControl())
+                .build();
     }
 
     @GET

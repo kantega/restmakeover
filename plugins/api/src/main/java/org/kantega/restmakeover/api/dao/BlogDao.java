@@ -4,6 +4,7 @@ package org.kantega.restmakeover.api.dao;
 
 import org.kantega.restmakeover.api.Blog;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -44,5 +45,8 @@ public interface BlogDao {
      * @param blogName The name of the blog to delete
      */
     void deleteBlogByName(String blogName);
+
+
+    Date lastModifiedTime();
 
 }

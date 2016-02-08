@@ -1,59 +1,58 @@
 #section("content")
-<h1 class="extruded">Getting started</h1>
-
-<p>In this warm-up task you will get to know the blog application</p>
-<p>Your goal is to create at least:</p>
-<ul>
-    <li>One blog</li>
-    <li>One post in the blog</li>
-    <li>One comment to the blog post</li>
-</ul>
+<h1 class="extruded">No caching, no chill</h1>
 
 <p>
-    The blog application can be found <a href="/#/blogs" target="_blank">here</a>
+    Caching is what makes the internet sing. The internet without caching is like life before Youtube.
 </p>
+
+<p>Your goal is to create make the <a href="/r/blogs" target="_blank">blog listing resource</a> more cache friendly:</p>
+
+<p>
+    <a href="https://devcenter.heroku.com/articles/jax-rs-http-caching" target="_blank">Implementation hint</a>
+</p>
+
+
+<h3>Initial request:</h3>
+<pre id="request"></pre>
+
+<pre id="response"></pre>
+
+<div id="cond" style="display: none">
+<h3>Conditional request, same time:</h3>
+<pre id="condrequest"></pre>
+
+<pre id="condresponse"></pre>
+</div>
+
+
 
 <div class="panel panel-default results" style="position: fixed;bottom:0; right:20px" id="testResultsApp">
     <div class="panel-heading">
         <div class="panel-title">Test results:</div>
     </div>
     <div class="panel-body" id="resultBody">
-        <p id="yesblog" style="display: none">
-            YES! You have successfully created the blog <span style="font-weight: bold" class="blogname"></span>
+        <p id="yeslastmod" style="display: none">
+            <span class="label label-success">YES!</span> You have successfully set the <code>Last-Modified: </code>
         </p>
 
-        <p id="noblog" style="display: none">
-            FAIL! You have not yet created any blog
+        <p id="nolastmod" style="display: none">
+            <span class="label label-danger">FAIL</span> <a href="/r/blogs">/r/blogs</a> does not return a <code>Last-Modified:</code> header
         </p>
 
-        <p id="yespost" style="display: none">
-            YES! You have successfully created the blog post <span style="font-weight: bold"
-                                                                   class="blogposttitle"></span>
+        <p id="yesconditional" style="display: none">
+            <span class="label label-success">YES!</span> The conditional request now correctly returns <code>403 Not Modified</code>
         </p>
 
-        <p id="nopost" style="display: none">
-            FAIL! You have not yet created any blog post in <span style="font-weight: bold" class="blogname"></span>
+        <p id="noconditional" style="display: none">
+            <span class="label label-danger">FAIL</span> Expected a conditional (with If-Modified-Since) request with the same timestamp to return 304 Not Modified. (Not <span class="condstatus"></span>)
         </p>
-
-
-        <p id="yescomment" style="display: none">
-            YES! You have successfully added a comment to blog post <span style="font-weight: bold"
-                                                                          class="blogposttitle"></span>
-            ( As <span style="font-weight: bold" class="commentauthor"></span> )
-        </p>
-
-        <p id="nocomment" style="display: none">
-            FAIL! You have not yet added any comment to the blog post <span style="font-weight: bold"
-                                                                            class="blogposttitle"></span>
-        </p>
-
 
         <div id="done" style="display: none;">
             <div id="video"></div>
             <p></p>
 
             <p>
-                It's time to get your feet wet with REST! <a href="addcounter">Next task</a>
+                May the force be with you in your <a href="addcounter">next task</a>
             </p>
         </div>
     </div>
@@ -61,53 +60,112 @@
 
 
 <script>
-
     function forEach(obj, each) {
         for(var i = 0; i < obj.length; i++) {
             each(obj[i]);
         }
     }
-    function analyze(url, ready) {
+
+
+    function analyze(url, headers, ready) {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
+        var uri = encodeURI(url);
+
+        xhr.open("GET", uri, true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4) {
-                ready(JSON.parse(xhr.responseText));
+                ready(xhr);
             }
+        };
+        for(var name in headers) {
+            xhr.setRequestHeader(name, headers[name]);
         }
         xhr.send(null);
+
     }
 
-    analyze("/r/blogs",function (blogs) {
-        if (blogs.length == 0) {
-            document.querySelector("#noblog").style.display = "block";
-        } else {
-            forEach(document.querySelectorAll(".blogname"), function(e) {e.innerText = blogs[0].name;});
+    function responseDesc(xhr) {
+        var txt = "HTTP " + xhr.status + " " + xhr.statusText;
 
-            document.querySelector("#yesblog").style.display = "block";
+        var headers = xhr.getAllResponseHeaders();
+        txt += "\n" + headers;
 
-            analyze("/r/blogs/" + encodeURIComponent(blogs[0].name) +"/posts",function (posts) {
-                if (posts.length == 0) {
-                    document.querySelector("#nopost").style.display = "block";
+        txt += "\n" + xhr.responseText;
+        return txt;
+    }
+
+    analyze("/r/blogs", {}, function (xhr) {
+
+
+
+
+
+
+        document.querySelector("#response").innerText= responseDesc(xhr);
+
+        document.querySelector("#request").innerHTML  = "GET  /r/blogs";
+
+        var lastmod = xhr.getResponseHeader("Last-Modified");
+
+        if(lastmod) {
+            document.querySelector("#yeslastmod").style.display = "block";
+            forEach(document.querySelectorAll(".lmod"), function(e) {e.innerText = lastmod});
+
+            document.querySelector("#condrequest").innerHTML  = "GET  /r/blogs\nIf-Modified-Since: " + lastmod;
+            document.querySelector("#cond").style.display="block";
+            analyze("/r/blogs", {"If-Modified-Since": lastmod}, function(condxhr) {
+                document.querySelector("#condresponse").innerText= responseDesc(condxhr);
+
+                if(condxhr.status == 304) {
+                    document.querySelector("#yesconditional").style.display = "block";
+
+                    document.querySelector("#done").style.display = "block";
+                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/4Z3r9X8OahA?start=0&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
                 } else {
-                    forEach(document.querySelectorAll(".blogposttitle"), function(e) {e.innerText = posts[0].title;});
-                    document.querySelector("#yespost").style.display = "block";
-
-                    analyze("/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(posts[0].title) +"/comments"
-                            , function (comments) {
-                                if (comments.length == 0) {
-                                    document.querySelector("#nocomment").style.display = "block";
-                                } else {
-                                    forEach(document.querySelectorAll(".commentauthor"), function(e) {e.innerText = comments[0].author;});
-                                    document.querySelector("#yescomment").style.display = "block";
-                                    document.querySelector("#done").style.display = "block";
-                                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/jQZtk-fCWQ4?start=37&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
-                                }
-                            });
+                    forEach(document.querySelectorAll(".condstatus"), function(e) {e.innerText = condxhr.status});
+                    document.querySelector("#noconditional").style.display = "block";
                 }
+
             });
+
+        } else {
+            document.querySelector("#nolastmod").style.display = "block";
         }
+
+        /*
+         if (blogs.length == 0) {
+         document.querySelector("#noblog").style.display = "block";
+         } else {
+         forEach(document.querySelectorAll(".blogname"), function(e) {e.innerText = blogs[0].name;});
+
+         document.querySelector("#yesblog").style.display = "block";
+
+         analyze("/r/blogs/" + encodeURIComponent(blogs[0].name) +"/posts",function (posts) {
+         if (posts.length == 0) {
+         document.querySelector("#nopost").style.display = "block";
+         } else {
+         forEach(document.querySelectorAll(".blogposttitle"), function(e) {e.innerText = posts[0].title;});
+         document.querySelector("#yespost").style.display = "block";
+
+         analyze("/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(posts[0].title) +"/comments"
+         , function (comments) {
+         if (comments.length == 0) {
+         document.querySelector("#nocomment").style.display = "block";
+         } else {
+         forEach(document.querySelectorAll(".commentauthor"), function(e) {e.innerText = comments[0].author;});
+         document.querySelector("#yescomment").style.display = "block";
+         document.querySelector("#done").style.display = "block";
+         document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/jQZtk-fCWQ4?start=37&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+         }
+         });
+         }
+         });
+
+         }
+         */
     });
+
 
 
 

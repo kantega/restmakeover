@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -73,9 +74,11 @@ public class JdbcBlogDao implements BlogDao {
      */
     public void saveOrUpdate(Blog blog) {
         if (blog.isNew()) {
-            template.update("INSERT INTO blog (blogname, color) VALUES (?, ?)", blog.getName(), blog.getColor());
+            template.update("INSERT INTO blog (blogname, color, lastmodified) VALUES (?, ?, ?)", blog.getName(), blog.getColor(), new Date());
         } else {
-            template.update("UPDATE blog SET blogname=?, color=? WHERE blogid=?", blog.getName(), blog.getColor(), blog.getId());
+            template.update("UPDATE blog SET blogname=?, color=?, lastmodified WHERE blogid=?", blog.getName(), blog.getColor(),
+                    new Date(),
+                    blog.getId());
         }
     }
 
@@ -119,4 +122,8 @@ public class JdbcBlogDao implements BlogDao {
         template.update("DELETE FROM blog WHERE blogname=?", blog.getName());
     }
 
+    @Override
+    public Date lastModifiedTime() {
+        return template.queryForObject("select max(lastmodified) from blog", Date.class);
+    }
 }

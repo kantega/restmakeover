@@ -1,0 +1,149 @@
+#section("content")
+<h1 class="extruded">Response codes</h1>
+
+<p>We took a look at your API, and honesty and found the use of HTTP response codes
+to be pretty lazy</p>
+
+<p>
+    Let's try to ask for a blog which does not exist.
+</p>
+<p>
+    Returning a 500 (Server Error) when something is just not found is not very polite?
+</p>
+
+<pre id="request"></pre>
+
+<pre id="response"></pre>
+
+<div class="panel panel-default results" style="position: fixed;bottom:0; right:20px" id="testResultsApp">
+    <div class="panel-heading">
+        <div class="panel-title">Test results:</div>
+    </div>
+    <div class="panel-body" id="resultBody">
+        <p id="yescode" style="display: none">
+            <span class="label label-success">YES!</span> Your API now returns 404 for non-existing blogs
+        </p>
+
+        <p id="nocode" style="display: none">
+            <span class="label label-danger">FAIL</span> Your API returns code <span class="wrongcode">0</span>. (Expected 404)
+        </p>
+
+        <p id="yescustom" style="display: none">
+            <span class="label label-success">YES!</span> Your API now returns a custom 404 response.
+        </p>
+
+        <p id="nocustom" style="display: none">
+            <span class="label label-danger">FAIL</span> Your API returns Jetty's default 404 HTML body content. Please return a custom 404 respose entity.
+        </p>
+
+
+
+        <div id="done" style="display: none;">
+            <div id="video"></div>
+            <p></p>
+
+            <p>
+                Bla, bla <a href="caching">Next task</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function forEach(obj, each) {
+        for(var i = 0; i < obj.length; i++) {
+            each(obj[i]);
+        }
+    }
+
+    var nouns = ["bear", "bonsai", "crush", "dust", "ferry", "galley", "hook", "lan", "pumpkin", "semicolon"];
+
+    var adjectives = ["Functional", "Quarrelsome", "Damaging", "Hypnotic", "Gaping", "Mixed","Infamous", "Furry","Phobic", "Hard"];
+
+    var blogName = adjectives[Math.floor(Math.random()*adjectives.length)] +" " + nouns[Math.floor(Math.random()*nouns.length)];
+
+
+    function analyze(url, ready) {
+        var xhr = new XMLHttpRequest();
+        var uri = encodeURI(url);
+
+        xhr.open("GET", uri, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                ready(xhr);
+            }
+        }
+        xhr.send(null);
+        document.querySelector("#request").innerHTML  = "GET  " + uri;
+    }
+
+
+    analyze("/r/blogs/" + blogName,function (xhr) {
+
+
+        var txt = "HTTP " + xhr.status + " " + xhr.statusText;
+
+        var headers = xhr.getAllResponseHeaders();
+        txt +="\n" + headers;
+
+        txt +="\n" + xhr.responseText;
+
+        document.querySelector("#response").innerText= txt;
+
+
+        if(xhr.status == 404) {
+            document.querySelector("#yescode").style.display = "block";
+            if(xhr.responseText.indexOf("Powered by Jetty") != -1)  {
+                document.querySelector("#nocustom").style.display = "block";
+            } else {
+                document.querySelector("#yescustom").style.display = "block";
+
+                document.querySelector("#done").style.display = "block";
+                document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/IytNBm8WA1c?start=37&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
+            }
+        } else {
+            forEach(document.querySelectorAll(".wrongcode"), function(e) {e.innerText = xhr.status;});
+            document.querySelector("#nocode").style.display = "block";
+        }
+
+        /*
+        if (blogs.length == 0) {
+            document.querySelector("#noblog").style.display = "block";
+        } else {
+            forEach(document.querySelectorAll(".blogname"), function(e) {e.innerText = blogs[0].name;});
+
+            document.querySelector("#yesblog").style.display = "block";
+
+            analyze("/r/blogs/" + encodeURIComponent(blogs[0].name) +"/posts",function (posts) {
+                if (posts.length == 0) {
+                    document.querySelector("#nopost").style.display = "block";
+                } else {
+                    forEach(document.querySelectorAll(".blogposttitle"), function(e) {e.innerText = posts[0].title;});
+                    document.querySelector("#yespost").style.display = "block";
+
+                    analyze("/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(posts[0].title) +"/comments"
+                            , function (comments) {
+                                if (comments.length == 0) {
+                                    document.querySelector("#nocomment").style.display = "block";
+                                } else {
+                                    forEach(document.querySelectorAll(".commentauthor"), function(e) {e.innerText = comments[0].author;});
+                                    document.querySelector("#yescomment").style.display = "block";
+                                    document.querySelector("#done").style.display = "block";
+                                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/jQZtk-fCWQ4?start=37&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                }
+                            });
+                }
+            });
+
+        }
+        */
+    });
+
+
+
+</script>
+#end
+#parse("design.html")

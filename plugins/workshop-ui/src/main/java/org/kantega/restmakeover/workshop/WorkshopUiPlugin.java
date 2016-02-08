@@ -35,6 +35,7 @@ public class WorkshopUiPlugin {
 
         templateServlet("index.html", "/workshop-ui/");
         templateServlet("gettingstarted.html", "/workshop-ui/gettingstarted");
+        templateServlet("notfound.html", "/workshop-ui/notfound");
         templateServlet("caching.html", "/workshop-ui/caching");
     }
 
