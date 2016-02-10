@@ -8,6 +8,8 @@ import org.kantega.restmakeover.api.dao.BlogPostCommentDao;
 import org.kantega.restmakeover.api.dao.BlogPostDao;
 import org.kantega.restmakeover.rest.model.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.sql.Timestamp;
@@ -100,9 +102,11 @@ public class BlogsResource {
     @GET
     @Path("{blogName}/{postTitle}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBlogPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle) {
+    public Response getBlogPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, @Context HttpServletRequest request) {
         Blog blog = blogDao.getBlogByName(blogName);
         BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
+
+        request.getSession().setAttribute("lastViewedBlogPost", blogPost);
 
         return Response.ok(new Post(blogPost))
                 .cacheControl(new CacheControl())
@@ -121,8 +125,11 @@ public class BlogsResource {
     @POST
     @Path("{blogName}/{postTitle}/comments")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCommments(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, NewComment comment) {
-        BlogPost blogPost = blogPostDao.getBlogPost(blogDao.getBlogByName(blogName), postTitle);
+    public Response addComment(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, NewComment comment, @Context HttpServletRequest req) {
+
+        Blog blog = blogDao.getBlogByName(blogName);
+
+        BlogPost blogPost = (BlogPost) req.getSession().getAttribute("lastViewedBlogPost");
 
         BlogPostComment c = new BlogPostComment(blogPost);
         c.setAuthor(comment.getAuthor());

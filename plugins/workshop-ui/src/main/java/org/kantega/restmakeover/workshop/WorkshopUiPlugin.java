@@ -38,6 +38,9 @@ public class WorkshopUiPlugin {
         templateServlet("notfound.html", "/workshop-ui/notfound");
         templateServlet("caching.html", "/workshop-ui/caching");
         templateServlet("etags.html", "/workshop-ui/etags");
+        templateServlet("enemy-of-the-state.html", "/workshop-ui/enemy-of-the-state");
+
+        servlets.add(servletBuilder.filter(new SessionAttributeTrackingFilter(), "/*", FilterPhase.PRE_USER));
     }
 
     private void templateServlet(String file, String path) {

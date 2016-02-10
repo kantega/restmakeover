@@ -132,11 +132,11 @@ public class JdbcBlogPostDao implements BlogPostDao {
      * Return a blog post given the blog and the name of the post.
      * 
      * @param blog The blog this post belongs to
-     * @param postName The name of the blog post
+     * @param postTitle The name of the blog post
      * @return The blog post if found
      */
-    public BlogPost getBlogPost(Blog blog, String postName) {
-        return getBlogPosts("where blogpost.blogid=? and blogpost.posttitle=?", blog.getId(), postName).iterator().next();
+    public BlogPost getBlogPost(Blog blog, String postTitle) {
+        return getBlogPosts("where blogpost.blogid=? and blogpost.posttitle=?", blog.getId(), postTitle).iterator().next();
     }
 
 }

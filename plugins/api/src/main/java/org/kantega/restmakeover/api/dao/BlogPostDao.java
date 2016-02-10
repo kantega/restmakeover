@@ -39,8 +39,8 @@ public interface BlogPostDao {
      * Return a blog post given the blog and the name of the post.
      * 
      * @param blog The blog this post belongs to
-     * @param postName The name of the blog post
+     * @param postTitle The name of the blog post
      * @return The blog post if found
      */
-    public BlogPost getBlogPost(Blog blog, String postName);
+    public BlogPost getBlogPost(Blog blog, String postTitle);
 }

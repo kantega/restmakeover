@@ -1,0 +1,222 @@
+#section("content")
+<h1 class="extruded">Enemy of the state</h1>
+
+<p>
+    Session state is the enemy of REST services. Stateless services are easier to make, test, deploy and scale.
+</p>
+
+<p>
+    In the example below, session state is used to associate a blog comment to the last viewed blog post.
+</p>
+
+<p>
+    But watch what happens if we open a blog post in tab B, then go back and comment in post A:
+</p>
+
+<h3>Open "<span class="atitle"></span>" in tab A:</h3>
+<pre id="requestA"></pre>
+
+<h3>Open "<span class="btitle"></span>" in tab B:</h3>
+
+<pre id="requestB"></pre>
+
+<h3>Back in tab A, post a comment to "<span class="atitle"></span>":</h3>
+
+<pre id="commentPost"></pre>
+
+<h3>Which post was the comment added to?</h3>
+
+
+<pre id="commentsA"></pre>
+
+<pre id="commentsB"></pre>
+
+
+<div id="cond" style="display: none">
+<h3>Conditional request, identical ETag:</h3>
+<pre id="condrequest"></pre>
+
+<pre id="condresponse"></pre>
+</div>
+
+
+
+<div class="panel panel-default results" style="position: fixed;bottom:0; right:20px" id="testResultsApp">
+    <div class="panel-heading">
+        <div class="panel-title">Test results:</div>
+    </div>
+    <div class="panel-body" id="resultBody">
+        <p id="yesread" style="display: none">
+            <span class="label label-success">YES!</span> You no longer read session a attribute when posting comments.
+        </p>
+
+        <p id="noread" style="display: none">
+            <span class="label label-danger">FAIL</span> Your code reads a session attribute when posting a comment. Yuck!
+        </p>
+
+        <p id="yeswrite" style="display: none">
+            <span class="label label-success">YES!</span> You no longer write a session attribute when fetching a blog post
+        </p>
+
+        <p id="nowrite" style="display: none">
+            <span class="label label-danger">FAIL</span> Your code writes a session attribute when fetching a blog post
+        </p>
+
+
+        <p id="yescorrect" style="display: none">
+            <span class="label label-success">YES!</span> The comment was written to <span class="atitle"></span>
+        </p>
+
+        <p id="nocorrect" style="display: none">
+            <span class="label label-danger">FAIL</span> The comment was posted to the wrong blog post
+        </p>
+
+        <div id="done" style="display: none;">
+            <div id="video"></div>
+            <p></p>
+
+            <p>
+                Now where, did I leave my keys? <a href="locking">Next task</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function forEach(obj, each) {
+        for(var i = 0; i < obj.length; i++) {
+            each(obj[i]);
+        }
+    }
+
+
+    function analyze(url, headers, ready) {
+        var xhr = new XMLHttpRequest();
+        var uri = encodeURI(url);
+
+        xhr.open("GET", uri, false);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                ready(xhr);
+            }
+        };
+        for(var name in headers) {
+            xhr.setRequestHeader(name, headers[name]);
+        }
+        xhr.send(null);
+
+    }
+
+    function responseDesc(xhr) {
+        var txt = "HTTP " + xhr.status + " " + xhr.statusText;
+
+        var headers = xhr.getAllResponseHeaders();
+        txt += "\n" + headers;
+
+        txt += "\n" + xhr.responseText;
+        return txt;
+    }
+
+    // Get blog list
+    analyze("/r/blogs", {}, function (blogsXhr) {
+
+        var blog = JSON.parse(blogsXhr.responseText)[0];
+
+
+        var postsUri = "/r/blogs/" + blog.name + "/posts";
+        analyze(postsUri, {}, function(postsXhr) {
+            if(JSON.parse(postsXhr.responseText).length < 2) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", postsUri, false);
+                xhr.setRequestHeader("Content-Type", "application/json")
+                xhr.send(JSON.stringify({title: "Random thoughts", content: Math.random()}));
+            }
+        });
+
+        analyze(postsUri, {}, function(postsXhr) {
+
+
+            var postB = JSON.parse(postsXhr.responseText)[0];
+            var postA = JSON.parse(postsXhr.responseText)[1];
+
+            var urlA = "/r/blogs/" +blog.name + "/" + postA.title;
+
+            forEach(document.querySelectorAll(".atitle"), function(e) {e.innerText = postA.title});
+            forEach(document.querySelectorAll(".btitle"), function(e) {e.innerText = postB.title});
+
+            var errs = [];
+            analyze(urlA, {}, function(xhrA) {
+                document.querySelector("#requestA").innerText = "GET " + encodeURI(urlA);
+                if(xhrA.getResponseHeader("X-Session-Attr-Write")) {
+                    document.querySelector("#nowrite").style.display = "block";
+                    errs.push({})
+                } else {
+                    document.querySelector("#yeswrite").style.display = "block";
+                }
+
+            });
+
+            var urlB = "/r/blogs/" +blog.name + "/" + postB.title;
+
+
+
+            analyze("/r/blogs/" +blog.name + "/" + postB.title, {}, function(xhr3) {
+
+                document.querySelector("#requestB").innerText = "GET " + encodeURI(urlB);
+            });
+
+            var commentAUrl = urlA + "/comments";
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", commentAUrl, false);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+
+                    if(xhr.getResponseHeader("X-Session-Attr-Read")) {
+                        document.querySelector("#noread").style.display = "block";
+                        errs.push({})
+                    } else {
+                        document.querySelector("#yesread").style.display = "block";
+
+                    }
+                }
+            };
+            xhr.setRequestHeader("Content-Type", "application/json")
+            var randomCat = Math.floor(Math.random()*100);
+            var author = "Anonymous cat " + randomCat;
+            var commentJson = JSON.stringify({author: author, content: "Meeeow!!"});
+            xhr.send(commentJson);
+
+            document.querySelector("#commentPost").innerText = "POST " + encodeURI(commentAUrl) +"\nContent-Type: application/json\n\n" + commentJson;
+
+
+            analyze(commentAUrl, {}, function(commentsXhr) {
+                document.querySelector("#commentsA").innerText = "GET " + encodeURI(commentAUrl) +"\n\n" + commentsXhr.responseText;
+                var comments = JSON.parse(commentsXhr.responseText);
+                var lastComment = comments[comments.length-1];
+
+                if(lastComment && lastComment.author === author) {
+                    document.querySelector("#yescorrect").style.display = "block";
+
+                    document.querySelector("#done").style.display = "block";
+                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/YRbakPKgU5Y?start=100&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
+                } else {
+                    document.querySelector("#nocorrect").style.display = "block";
+                }
+            });
+            var commentBUrl = urlB + "/comments";
+            analyze(commentBUrl, {}, function(commentsXhr) {
+                document.querySelector("#commentsB").innerText = "GET " + encodeURI(commentBUrl) +"\n\n" + commentsXhr.responseText;
+            });
+        });
+
+
+    });
+
+
+
+
+</script>
+#end
+#parse("design.html")
