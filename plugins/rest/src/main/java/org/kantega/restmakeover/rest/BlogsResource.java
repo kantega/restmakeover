@@ -41,6 +41,19 @@ public class BlogsResource {
                 .build();
     }
 
+
+    /**
+     * Returns a String representation of all lastModified dates xor'd
+     */
+    private String etag(List<Blog> blogs) {
+        long lastMod = 0;
+        for (Blog blog : blogs) {
+            lastMod ^= blog.getLastModified().getTime();
+        }
+
+        return Long.toString(lastMod);
+    }
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createBlog(Blog input) {

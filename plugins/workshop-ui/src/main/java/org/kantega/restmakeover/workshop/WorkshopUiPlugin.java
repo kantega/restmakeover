@@ -37,6 +37,7 @@ public class WorkshopUiPlugin {
         templateServlet("gettingstarted.html", "/workshop-ui/gettingstarted");
         templateServlet("notfound.html", "/workshop-ui/notfound");
         templateServlet("caching.html", "/workshop-ui/caching");
+        templateServlet("etags.html", "/workshop-ui/etags");
     }
 
     private void templateServlet(String file, String path) {

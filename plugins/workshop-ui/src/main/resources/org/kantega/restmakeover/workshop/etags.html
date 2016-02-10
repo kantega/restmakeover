@@ -1,16 +1,14 @@
 #section("content")
-<h1 class="extruded">No caching, no chill</h1>
+<h1 class="extruded">Etags to the rescue!</h1>
 
 <p>
-    Caching is what makes the internet sing. The internet without caching is like life before Youtube.
+    While If-Modified-Since is great, not all caching decisions are optimally made by date comparisons.
 </p>
-
-<p>Your goal is to create make the <a href="/r/blogs" target="_blank">blog listing resource</a> more cache friendly:</p>
 
 <p>
-    <a href="https://devcenter.heroku.com/articles/jax-rs-http-caching" target="_blank">Implementation hint</a>
+    If we delete an blog, then the last blog modification date will still be the same. To make the cache
+    invalidate in cases like this it's better to use ETags.
 </p>
-
 
 <h3>Initial request:</h3>
 <pre id="request"></pre>
@@ -18,7 +16,7 @@
 <pre id="response"></pre>
 
 <div id="cond" style="display: none">
-<h3>Conditional request, same time:</h3>
+<h3>Conditional request, identical ETag:</h3>
 <pre id="condrequest"></pre>
 
 <pre id="condresponse"></pre>
@@ -31,12 +29,12 @@
         <div class="panel-title">Test results:</div>
     </div>
     <div class="panel-body" id="resultBody">
-        <p id="yeslastmod" style="display: none">
-            <span class="label label-success">YES!</span> You have successfully set the <code>Last-Modified</code> header
+        <p id="yesetag" style="display: none">
+            <span class="label label-success">YES!</span> You have successfully set the <code>ETag</code> header
         </p>
 
-        <p id="nolastmod" style="display: none">
-            <span class="label label-danger">FAIL</span> <a href="/r/blogs">/r/blogs</a> does not return a <code>Last-Modified</code> header
+        <p id="noetag" style="display: none">
+            <span class="label label-danger">FAIL</span> <a href="/r/blogs">/r/blogs</a> does not set an <code>ETag</code> response header
         </p>
 
         <p id="yesconditional" style="display: none">
@@ -44,7 +42,7 @@
         </p>
 
         <p id="noconditional" style="display: none">
-            <span class="label label-danger">FAIL</span> Expected a conditional (with If-Modified-Since) request with the same timestamp to return 304 Not Modified. (Not <span class="condstatus"></span>)
+            <span class="label label-danger">FAIL</span> Expected a conditional (with If-None-Match) request with the same ETag to return 304 Not Modified. (Not <span class="condstatus"></span>)
         </p>
 
         <div id="done" style="display: none;">
@@ -52,7 +50,7 @@
             <p></p>
 
             <p>
-                May the force be with you in your <a href="etags">next task</a>
+                Nicely done, Diga the purrkour cat! <a href="addcounter">Next task</a>
             </p>
         </div>
     </div>
@@ -105,22 +103,22 @@
 
         document.querySelector("#request").innerHTML  = "GET  /r/blogs";
 
-        var lastmod = xhr.getResponseHeader("Last-Modified");
+        var etag = xhr.getResponseHeader("ETag");
 
-        if(lastmod) {
-            document.querySelector("#yeslastmod").style.display = "block";
-            forEach(document.querySelectorAll(".lmod"), function(e) {e.innerText = lastmod});
+        if(etag) {
+            document.querySelector("#yesetag").style.display = "block";
+            forEach(document.querySelectorAll(".lmod"), function(e) {e.innerText = etag});
 
-            document.querySelector("#condrequest").innerHTML  = "GET  /r/blogs\nIf-Modified-Since: " + lastmod;
+            document.querySelector("#condrequest").innerHTML  = "GET  /r/blogs\nIf-None-Match: " + etag;
             document.querySelector("#cond").style.display="block";
-            analyze("/r/blogs", {"If-Modified-Since": lastmod}, function(condxhr) {
+            analyze("/r/blogs", {"If-None-Match": etag}, function(condxhr) {
                 document.querySelector("#condresponse").innerText= responseDesc(condxhr);
 
                 if(condxhr.status == 304) {
                     document.querySelector("#yesconditional").style.display = "block";
 
                     document.querySelector("#done").style.display = "block";
-                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/4Z3r9X8OahA?start=0&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/oMUqfDlEFlA?start=10&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
 
                 } else {
                     forEach(document.querySelectorAll(".condstatus"), function(e) {e.innerText = condxhr.status});
@@ -130,7 +128,7 @@
             });
 
         } else {
-            document.querySelector("#nolastmod").style.display = "block";
+            document.querySelector("#noetag").style.display = "block";
         }
 
         /*

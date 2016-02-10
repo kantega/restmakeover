@@ -64,6 +64,7 @@ public class JdbcBlogDao implements BlogDao {
         blog.setId(resultSet.getLong("blogid"));
         blog.setName(resultSet.getString("blogname"));
         blog.setColor(resultSet.getString("color"));
+        blog.setLastModified(new Date(resultSet.getTimestamp("lastmodified").getTime()));
         return blog;
     }
 

@@ -2,6 +2,7 @@ package org.kantega.restmakeover.api;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Date;
 
 /**
  * Domain object for a blog.
@@ -12,6 +13,7 @@ public class Blog {
     private long id;
     private String name;
     private String color;
+    private Date lastModified;
 
     public long getId() {
         return id;
@@ -61,5 +63,13 @@ public class Blog {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public Date getLastModified() {
+        return lastModified;
     }
 }
