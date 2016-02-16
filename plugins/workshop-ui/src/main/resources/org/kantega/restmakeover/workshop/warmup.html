@@ -16,6 +16,12 @@
 
 <pre id="response"></pre>
 
+<div id="req2" style="display: none">
+<pre id="request2"></pre>
+
+<pre id="response2"></pre>
+
+</div>
 <div class="panel panel-default results" style="position: fixed;bottom:0; right:20px" id="testResultsApp">
     <div class="panel-heading">
         <div class="panel-title">Test results:</div>
@@ -43,6 +49,14 @@
 
         <p id="noprop" style="display: none">
             <span class="label label-danger">FAIL</span> JSON does not have a property <code>username:</code> with value <code>johndoe</code>
+        </p>
+
+        <p id="yesprop2" style="display: none">
+            <span class="label label-success">YES!</span> username property is <code class="userprop"></code> when GETting <code>/r/users/<span class="userpropexpected"></span></code>
+        </p>
+
+        <p id="noprop2" style="display: none">
+            <span class="label label-danger">FAIL</span> username property is <code class="userprop"></code> when GETting <code>/r/users/<span class="userpropexpected"></span></code>, expected <code class="userpropexpected"></code>
         </p>
 
 
@@ -78,7 +92,7 @@
             }
         }
         xhr.send(null);
-        document.querySelector("#request").innerHTML  = "GET  " + uri;
+
     }
 
 
@@ -92,6 +106,7 @@
 
         txt +="\n" + xhr.responseText;
 
+        document.querySelector("#request").innerHTML  = "GET  /r/user/johndoe";
         document.querySelector("#response").innerText= txt;
 
 
@@ -112,10 +127,42 @@
                 if(!profile || "johndoe" !== profile.username) {
                     document.querySelector("#noprop").style.display = "block";
                 } else {
-
                     document.querySelector("#yesprop").style.display = "block";
-                    document.querySelector("#done").style.display = "block";
-                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/TaLYj_3fwNE?start=30&amp;end=45&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
+                    var username = "user_" + (Math.ceil(Math.random()*1000));
+
+                    document.querySelector("#req2").style.display = "block";
+                    document.querySelector("#request2").innerHTML  = "GET  /r/user/" + username;
+                    analyze("/r/user/" + username, function(xhr2) {
+
+                        var txt = "HTTP " + xhr2.status + " " + xhr2.statusText;
+
+                        var headers = xhr2.getAllResponseHeaders();
+                        txt +="\n" + headers;
+
+                        txt +="\n" + xhr2.responseText;
+
+                        document.querySelector("#response2").innerText= txt;
+
+
+
+
+                        var userprop = JSON.parse(xhr2.responseText).username;
+
+                        forEach(document.querySelectorAll(".userprop"), function(e) {e.innerText = userprop});
+                        forEach(document.querySelectorAll(".userpropexpected"), function(e) {e.innerText = username});
+
+                        if(username !== userprop) {
+                            document.querySelector("#noprop2").style.display = "block";
+                        } else {
+                            document.querySelector("#yesprop2").style.display = "block";
+                            document.querySelector("#done").style.display = "block";
+                            document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/TaLYj_3fwNE?start=30&amp;end=45&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
+                        }
+
+                    });
+
                 }
 
             }

@@ -12,9 +12,10 @@ import javax.ws.rs.Produces;
 public class UserInfoResource {
 
 
+    // We should repond to GET requests on path {username} and return application/json
     @GET
     @Path("{username}")
-    @Produces({"application/json", "text/xml"})
+    @Produces("application/json")
     public User getUserByUsername(@PathParam("username") String username) {
         return new User(username, " John Doe");
     }
