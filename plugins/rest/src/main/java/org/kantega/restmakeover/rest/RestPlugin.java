@@ -4,6 +4,7 @@ package org.kantega.restmakeover.rest;
 import org.kantega.restmakeover.api.dao.BlogDao;
 import org.kantega.restmakeover.api.dao.BlogPostCommentDao;
 import org.kantega.restmakeover.api.dao.BlogPostDao;
+import org.kantega.restmakeover.rest.users.UserInfoResource;
 import org.kantega.reststop.api.Export;
 import org.kantega.reststop.api.Plugin;
 import org.kantega.reststop.jaxrsapi.ApplicationBuilder;
@@ -20,6 +21,7 @@ public class RestPlugin  {
 
         metricsApp = applicationBuilder.application()
                 .singleton(new BlogsResource(blogDao, blogPostDao, blogPostCommentDao))
+                .singleton(new UserInfoResource())
                 .build();
     }
 

@@ -106,7 +106,7 @@ public class BlogsResource {
         Blog blog = blogDao.getBlogByName(blogName);
         BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
 
-        request.getSession().setAttribute("lastViewedBlogPost", blogPost);
+        //request.getSession().setAttribute("lastViewedBlogPost", blogPost);
 
         return Response.ok(new Post(blogPost))
                 .cacheControl(new CacheControl())
@@ -129,7 +129,10 @@ public class BlogsResource {
 
         Blog blog = blogDao.getBlogByName(blogName);
 
-        BlogPost blogPost = (BlogPost) req.getSession().getAttribute("lastViewedBlogPost");
+        //BlogPost blogPost = (BlogPost) req.getSession().getAttribute("lastViewedBlogPost");
+
+        BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
+
 
         BlogPostComment c = new BlogPostComment(blogPost);
         c.setAuthor(comment.getAuthor());

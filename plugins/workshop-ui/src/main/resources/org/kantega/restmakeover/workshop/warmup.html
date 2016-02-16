@@ -1,14 +1,15 @@
 #section("content")
-<h1 class="extruded">Expect the unexpected</h1>
-
-<p>We took a look at your API, and honesty and found the use of HTTP response codes
-to be pretty lazy</p>
+<h1 class="extruded">JAX-RS</h1>
 
 <p>
-    Let's try to ask for a blog which does not exist.
+    JAX-RS provides an easy way to express REST resources as annotated classes.
+</p>
+
+<p>
+    This workshop assumes a basic understanding of JAX-RS
 </p>
 <p>
-    Returning a 500 (Server Error) when something is just not found is not very polite?
+    Your goal in this task is to annotate some Java code such that the request below returns a user profile, formatted as <code>application/json</code>
 </p>
 
 <pre id="request"></pre>
@@ -21,19 +22,27 @@ to be pretty lazy</p>
     </div>
     <div class="panel-body" id="resultBody">
         <p id="yescode" style="display: none">
-            <span class="label label-success">YES!</span> Your API now returns 404 for non-existing blogs
+            <span class="label label-success">YES!</span> The resource now returns status 200
         </p>
 
         <p id="nocode" style="display: none">
-            <span class="label label-danger">FAIL</span> Your API returns code <span class="wrongcode">0</span>. (Expected 404)
+            <span class="label label-danger">FAIL</span> The resource returns status <span class="wrongcode">0</span>. (Expected 200)
         </p>
 
-        <p id="yescustom" style="display: none">
-            <span class="label label-success">YES!</span> Your API now returns a custom 404 response.
+        <p id="yesjson" style="display: none">
+            <span class="label label-success">YES!</span> Content-type header is <code>application/json</code>
         </p>
 
-        <p id="nocustom" style="display: none">
-            <span class="label label-danger">FAIL</span> Your API returns Jetty's default 404 HTML body content. Please return a custom 404 respose entity.
+        <p id="nojson" style="display: none">
+            <span class="label label-danger">FAIL</span> Content-type header is not <code>application/json</code>
+        </p>
+
+        <p id="yesprop" style="display: none">
+            <span class="label label-success">YES!</span> JSON has a property <code>"username":</code> with value <code>"johndoe"</code>
+        </p>
+
+        <p id="noprop" style="display: none">
+            <span class="label label-danger">FAIL</span> JSON does not have a property <code>username:</code> with value <code>johndoe</code>
         </p>
 
 
@@ -43,7 +52,7 @@ to be pretty lazy</p>
             <p></p>
 
             <p>
-                Bla, bla <a href="caching">Next task</a>
+                Now, get in control of your mouse and click here: <a href="notfound">Next task</a>
             </p>
         </div>
     </div>
@@ -57,13 +66,6 @@ to be pretty lazy</p>
             each(obj[i]);
         }
     }
-
-    var nouns = ["bear", "bonsai", "crush", "dust", "ferry", "galley", "hook", "lan", "pumpkin", "semicolon"];
-
-    var adjectives = ["Functional", "Quarrelsome", "Damaging", "Hypnotic", "Gaping", "Mixed","Infamous", "Furry","Phobic", "Hard"];
-
-    var blogName = adjectives[Math.floor(Math.random()*adjectives.length)] +" " + nouns[Math.floor(Math.random()*nouns.length)];
-
 
     function analyze(url, ready) {
         var xhr = new XMLHttpRequest();
@@ -80,7 +82,7 @@ to be pretty lazy</p>
     }
 
 
-    analyze("/r/blogs/" + blogName,function (xhr) {
+    analyze("/r/user/johndoe",function (xhr) {
 
 
         var txt = "HTTP " + xhr.status + " " + xhr.statusText;
@@ -93,15 +95,28 @@ to be pretty lazy</p>
         document.querySelector("#response").innerText= txt;
 
 
-        if(xhr.status == 404) {
+        if(xhr.status == 200) {
             document.querySelector("#yescode").style.display = "block";
-            if(xhr.responseText.indexOf("Powered by Jetty") != -1)  {
-                document.querySelector("#nocustom").style.display = "block";
+            if(xhr.getResponseHeader("Content-Type").indexOf("application/json") != 0)  {
+                document.querySelector("#nojson").style.display = "block";
             } else {
-                document.querySelector("#yescustom").style.display = "block";
+                document.querySelector("#yesjson").style.display = "block";
 
-                document.querySelector("#done").style.display = "block";
-                document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/IytNBm8WA1c?start=37&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                var profile;
+                try {
+                    profile = JSON.parse(xhr.responseText)
+                } catch(ex) {
+
+                }
+
+                if(!profile || "johndoe" !== profile.username) {
+                    document.querySelector("#noprop").style.display = "block";
+                } else {
+
+                    document.querySelector("#yesprop").style.display = "block";
+                    document.querySelector("#done").style.display = "block";
+                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/TaLYj_3fwNE?start=30&amp;end=45&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                }
 
             }
         } else {
