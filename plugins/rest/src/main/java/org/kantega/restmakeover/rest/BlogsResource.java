@@ -9,13 +9,11 @@ import org.kantega.restmakeover.api.dao.BlogPostDao;
 import org.kantega.restmakeover.rest.model.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -116,10 +114,36 @@ public class BlogsResource {
     @GET
     @Path("{blogName}/{postTitle}/comments")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Comment> getCommments(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle) {
-        List<BlogPostComment> comments = blogPostCommentDao.getComments(blogPostDao.getBlogPost(blogDao.getBlogByName(blogName), postTitle));
-        return comments.stream()
-                .map(c -> new Comment(c)).collect(Collectors.toList());
+    public Response getCommments(@PathParam("blogName") String blogName,
+                                 @PathParam("postTitle") String postTitle,
+                                 @Context UriInfo uriInfo,
+                                 @QueryParam("skip") int skip,
+                                 @QueryParam("limit") int limit) {
+
+
+        if(limit > 10) {
+            return Response.status(Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE).build();
+        }
+        if(limit == 0) {
+            limit = 10;
+        }
+        List<Comment> comments = getComments(blogName, postTitle, skip, limit);
+
+        int next = skip + limit;
+        int prev = Math.max(0, skip - limit);
+        Response.ResponseBuilder response = Response.ok(comments);
+        if(! getComments(blogName, postTitle, next, 1).isEmpty()) {
+            response.link(uriInfo.getRequestUriBuilder().replaceQueryParam("skip", Integer.toString(next)).replaceQueryParam("limit", Integer.toString(limit)).build(), "next");
+        }
+        if(skip != 0) {
+            response.link(uriInfo.getRequestUriBuilder().replaceQueryParam("skip", Integer.toString(prev)).replaceQueryParam("limit", Integer.toString(limit)).build(), "prev");
+        }
+        return response.build();
+    }
+
+    private List<Comment> getComments(String blogName, String postTitle, int skip, int limit) {
+        return blogPostCommentDao.getComments(blogPostDao.getBlogPost(blogDao.getBlogByName(blogName), postTitle), skip, limit)
+                .stream().map(Comment::new).collect(Collectors.toList());
     }
 
     @POST

@@ -54,10 +54,12 @@ public class JdbcBlogPostCommentDao implements BlogPostCommentDao {
      * Return a list of comments for a given blog post.
      * 
      * @param post The blog post to read comments from
+     * @param skip
+     * @param limit
      * @return List of comments for this blog post.
      */
-    public List<BlogPostComment> getComments(final BlogPost post) {
-        String sql = "select blogpostcommentid, commentauthor, commentcontent, commentpublishdate from blogpostcomment where blogpostid=?";
+    public List<BlogPostComment> getComments(final BlogPost post, int skip, int limit) {
+        String sql = "select blogpostcommentid, commentauthor, commentcontent, commentpublishdate from blogpostcomment where blogpostid=? offset ? rows fetch next ? rows only";
         return template.query(sql, new RowMapper<BlogPostComment>() {
             @Override
             public BlogPostComment mapRow(ResultSet rs, int i) throws SQLException {
@@ -68,7 +70,7 @@ public class JdbcBlogPostCommentDao implements BlogPostCommentDao {
                 comment.setPublishDate(rs.getTimestamp("commentpublishdate"));
                 return comment;
             }
-        }, post.getBlogPostId());
+        }, post.getBlogPostId(), skip, limit);
     }
 
 }

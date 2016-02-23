@@ -1,0 +1,222 @@
+#section("content")
+<h1 class="extruded">Pages and pages of REST</h1>
+
+<p>
+    Collections may be too large to serve in a single response.
+</p>
+<p>
+    We need a simple and consistent way of showing results page-by-page
+</p>
+
+<div id="requests" style="display: none">
+    <p>Initial request:</p>
+    <pre id="request"></pre>
+    <pre id="response"></pre>
+
+    <div id="second" style="display: none">
+        <p>Following the <code>rel="next"</code> link:</p>
+        <pre id="request2"></pre>
+        <pre id="response2"></pre>
+    </div>
+</div>
+
+<div class="panel panel-default results" style="position: fixed;bottom:0; right:20px" id="testResultsApp">
+    <div class="panel-heading">
+        <div class="panel-title">Test results:</div>
+    </div>
+    <div class="panel-body" id="resultBody">
+
+        <p id="nocomments" style="display: none">
+            <span class="label label-danger">FAIL</span> Your blogpost <a class="bloglink" target="_blank" href="#"></a> needs at least 5 comments before you can continue with this task.
+        </p>
+
+        <p id="notwo" style="display: none">
+            <span class="label label-danger">FAIL</span> Expected to see exactly 2 comments for a request with <code>limit=2</code>, instead got <span class="numcomments">0</span>
+        </p>
+
+        <p id="yestwo" style="display: none">
+            <span class="label label-success">YES!</span> Your resource returned 2 comments when requested with <code>limit=2</code>
+        </p>
+
+        <p id="nonext" style="display: none">
+            <span class="label label-danger">FAIL</span> Expected to see a <code>Link</code> header with URL for <code>rel="next"</code>
+        </p>
+
+        <p id="yesnext" style="display: none">
+            <span class="label label-success">YES!</span> You have a <code>Link</code> header for <code>rel="next"</code>
+        </p>
+
+        <p id="noparams" style="display: none">
+            <span class="label label-danger">FAIL</span> Expected your rel="next" URL to have <code>skip=2</code> and <code>limit=2</code>, instead saw <span class="nexturl"></span>
+        </p>
+
+        <p id="yesparams" style="display: none">
+            <span class="label label-success">YES!</span> Your rel="next" URL has <code>skip=2</code> and <code>limit=2</code>
+        </p>
+
+        <p id="noprev" style="display: none">
+            <span class="label label-danger">FAIL</span> When following your <code>rel="next"</code> link, we expected to find a <code>rel="prev"</code> link header with <code>skip=0</code> and <code>limit=2</code>
+        </p>
+
+        <p id="yesprev" style="display: none">
+            <span class="label label-success">YES!</span> When following your <code>rel="next"</code> link, we found a <code>rel="prev"</code> link with <code>skip=0</code> and <code>limit=2</code>
+        </p>
+
+
+
+
+        <div id="done" style="display: none;">
+            <div id="video"></div>
+            <p></p>
+
+            <p>
+                We bet you have a colleague just like that! <a href="caching">Next task</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function forEach(obj, each) {
+        for(var i = 0; i < obj.length; i++) {
+            each(obj[i]);
+        }
+    }
+    function analyze(url, ready) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                ready(JSON.parse(xhr.responseText), xhr);
+            }
+        }
+        xhr.send(null);
+    }
+
+    analyze("/r/blogs",function (blogs) {
+        var blog = blogs[0];
+        analyze("/r/blogs/" + encodeURIComponent(blog.name) +"/posts",function (posts) {
+
+            var post = posts[0];
+            if(post.commentCount < 5) {
+                document.querySelector("#nocomments").style.display="block";
+                forEach(document.querySelectorAll(".bloglink"), function(a) {
+                    a.textContent = post.title;
+                    a.href = "/#/blogs/" + encodeURIComponent(blog.name) +"/" + encodeURIComponent(post.title);
+                });
+            } else {
+
+                document.querySelector("#requests").style.display="block";
+
+                var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(post.title) +"/comments?skip=0&limit=2";
+                document.querySelector("#request").textContent = "GET " + url;
+
+                analyze(url, function (comments, xhr) {
+
+                    var txt = "HTTP " + xhr.status + " " + xhr.statusText;
+
+
+                    var headers = xhr.getAllResponseHeaders();
+                    txt +="\n" + headers;
+
+                    txt +="\n" + xhr.responseText;
+
+                    document.querySelector("#response").innerText= txt;
+
+
+                    document.querySelector("#request").textContent = "GET " + url;
+
+                    if (comments.length != 2) {
+                        document.querySelector("#notwo").style.display = "block";
+                        forEach(document.querySelectorAll(".numcomments"), function(e) {e.textContent = comments.length})
+                    } else {
+                        document.querySelector("#yestwo").style.display = "block";
+
+                        var links = parseLinks(xhr.getResponseHeader("Link"));
+
+                        var next = links["next"];
+                        if(!next ) {
+                            document.querySelector("#nonext").style.display = "block";
+                        } else {
+                            document.querySelector("#yesnext").style.display = "block";
+
+                            forEach(document.querySelectorAll(".nexturl"), function(e) {e.innerText = next.url});
+                            if(next.params["skip"] !== "2" || next.params["limit"] !== "2") {
+
+                                document.querySelector("#noparams").style.display = "block";
+                            } else {
+                                document.querySelector("#yesparams").style.display = "block";
+
+                                document.querySelector("#second").style.display = "block";
+
+                                document.querySelector("#request2").innerText = "GET " + next.url.substr(next.url.indexOf("/r/"));
+
+                                analyze(next.url, function(nextComments, nextxhr) {
+
+                                    var txt = "HTTP " + nextxhr.status + " " + nextxhr.statusText;
+
+
+                                    var headers = nextxhr.getAllResponseHeaders();
+                                    txt +="\n" + headers;
+
+                                    txt +="\n" + nextxhr.responseText;
+
+                                    document.querySelector("#response2").innerText = txt;
+
+                                    var links = parseLinks(nextxhr.getResponseHeader("Link"));
+
+                                    var prev = links["prev"];
+                                    if(!prev ) {
+                                        document.querySelector("#noprev").style.display = "block";
+                                    } else {
+                                        document.querySelector("#yesprev").style.display = "block";
+                                        document.querySelector("#done").style.display = "block";
+                                        document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/UIrEM_9qvZU?start=626&amp;end=660&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                    }
+                                });
+
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+
+    function parseLinks(header) {
+        var links = {};
+        if(header) {
+            var split = header.split(",")
+            var pattern = /.*<(.*)>; rel="(.*)"/g;
+            for(var i = 0; i < split.length; i++) {
+                pattern.lastIndex = 0;
+                var groups = pattern.exec(split[i]);
+                var rel = groups[2];
+                var url = groups[1];
+
+                var link = {url: url, params: {}};
+
+                if(url.indexOf("?") != -1) {
+                    var qstring = url.substr(url.indexOf("?")+1);
+                    var params = qstring.split("&");
+                    for(var p = 0; p < params.length; p++) {
+                        var name = params[p].split("=")[0];
+                        var val = params[p].split("=")[1];
+
+                        link.params[name] = val;
+                    }
+                }
+
+                links[rel] = link ;
+            }
+        }
+
+        return links;
+    }
+
+</script>
+#end
+#parse("design.html")

@@ -22,8 +22,10 @@ public interface BlogPostCommentDao {
      * Return a list of comments for a given blog post.
      * 
      * @param post The blog post to read comments from
+     * @param skip number of comments to skip
+     * @param limit number of comments to fetch
      * @return List of comments for this blog post.
      */
-    List<BlogPostComment> getComments(final BlogPost post);
+    List<BlogPostComment> getComments(final BlogPost post, int skip, int limit);
 
 }
