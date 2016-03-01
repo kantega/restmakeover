@@ -52,17 +52,32 @@ public class BlogsResource {
 
 
     /**
-     * Returns a String representation of the hashcode of blog content
+     * Returns a String representation of the hashcode of blog list
      */
     private String etag(List<Blog> blogs) {
         StringBuilder content = new StringBuilder();
         for (Blog blog : blogs) {
-            content.append(blog.getColor())
-                    .append(blog.getName())
-                    .append(blog.getId());
+            content.append(etag(blog));
         }
-
         return Integer.toString(content.toString().hashCode());
+    }
+
+    /**
+     * Returns a String representation of the hashcode of blog content
+     */
+    private String etag(Blog blog) {
+        String content = blog.getColor() +
+                blog.getName() +
+                blog.getId();
+        return Integer.toString(content.hashCode());
+    }
+
+    /**
+     * Returns a String representation of the hashcode of blog post content
+     */
+    private String etag(BlogPost blog) {
+        String content = blog.getTitle() + blog.getContent();
+        return Integer.toString(content.hashCode());
     }
 
     @POST
@@ -132,6 +147,7 @@ public class BlogsResource {
 
         return Response.ok(new Post(blogPost))
                 .cacheControl(new CacheControl())
+                .tag(new EntityTag(etag(blogPost)))
                 .build();
     }
 
@@ -143,6 +159,26 @@ public class BlogsResource {
         BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
 
         blogPostDao.delete(blogPost);
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("{blogName}/{postTitle}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateBlogPost(@Context Request request, @PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, NewPost newPostData) {
+        Blog blog = blogDao.getBlogByName(blogName);
+        BlogPost post = blogPostDao.getBlogPost(blog, postTitle);
+
+        Response.ResponseBuilder responseBuilder = request.evaluatePreconditions(new EntityTag(etag(post)));
+        if(responseBuilder != null) {
+            return responseBuilder.build();
+        //} else {
+        //    return Response.status(412).build();
+        }
+
+        post.setContent(newPostData.getContent());
+        post.setPublishDate(new Timestamp(System.currentTimeMillis()));
+        blogPostDao.saveOrUpdate(post);
         return Response.ok().build();
     }
 

@@ -38,6 +38,7 @@ public class WorkshopUiPlugin {
         templateServlet("warmup.html", "/workshop-ui/warmup");
         templateServlet("verbs.html", "/workshop-ui/verbs");
         templateServlet("notfound.html", "/workshop-ui/notfound");
+        templateServlet("not-alone.html", "/workshop-ui/not-alone");
         templateServlet("caching.html", "/workshop-ui/caching");
         templateServlet("etags.html", "/workshop-ui/etags");
         templateServlet("enemy-of-the-state.html", "/workshop-ui/enemy-of-the-state");
