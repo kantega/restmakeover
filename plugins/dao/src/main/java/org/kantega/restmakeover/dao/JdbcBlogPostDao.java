@@ -139,4 +139,9 @@ public class JdbcBlogPostDao implements BlogPostDao {
         return getBlogPosts("where blogpost.blogid=? and blogpost.posttitle=?", blog.getId(), postTitle).iterator().next();
     }
 
+    @Override
+    public void delete(BlogPost blogPost) {
+        template.update("delete from blogpost where blogpostid = ?", blogPost.getBlogPostId());
+    }
+
 }

@@ -1,0 +1,229 @@
+#section("content")
+<h1 class="extruded">HTTP VERBS</h1>
+
+<p>
+    From time to time you will want to delete a blog post that is already created.
+</p>
+
+<p>
+    In your API, we delete a blog post by making a GET request to the blog post URL with the http parameter
+    "delete=true". This is a really, really bad practise.
+</p>
+
+<p>
+    HTTP provides the verbs GET, PUT, DELETE and POST that should be used to get, update, delete and create resource
+    instances. You should always use
+<ul>
+    <li>GET to retrieve data</li>
+    <li>PUT to update existing data</li>
+    <li>DELETE to delete data</li>
+    <li>POST to insert new data</li>
+</ul>
+</p>
+
+
+<p>
+    Your goal in this task is to
+<ul>
+    <li>remove the bad code that deletes the blog post when the user makes an HTTP GET request</li>
+    <li>write new code that deletes the blog post when the user makes an HTTP DELETE request</li>
+</ul>
+</p>
+
+<pre id="request1"></pre>
+
+<pre id="request2"></pre>
+
+<pre id="response2"></pre>
+
+<pre id="request3" style="display: none"></pre>
+<pre id="response3" style="display: none"></pre>
+
+<pre id="request4" style="display: none"></pre>
+<pre id="response4" style="display: none"></pre>
+
+</div>
+<div class="panel panel-default results" style="position: fixed;bottom:0; right:20px" id="testResultsApp">
+    <div class="panel-heading">
+        <div class="panel-title">Test results:</div>
+    </div>
+    <div class="panel-body" id="resultBody">
+        <p id="yesget" style="display: none">
+            <span class="label label-success">YES!</span> The request GET /...?delete=true did NOT delete the request
+        </p>
+
+        <p id="noget" style="display: none">
+            <span class="label label-danger">FAIL</span> A GET request should never change the state or delete anything
+        </p>
+
+        <p id="yes405" style="display: none">
+            <span class="label label-success">YES!</span> A request with HTTP verb DELETE is accepted
+        </p>
+
+        <p id="no405" style="display: none">
+            <span class="label label-danger">FAIL</span> A request with HTTP verb DELETE is rejected with 405
+        </p>
+
+        <p id="yesdelete" style="display: none">
+            <span class="label label-success">YES!</span> A request with HTTP verb DELETE does delete a blog post
+        </p>
+
+        <p id="nodelete" style="display: none">
+            <span class="label label-danger">FAIL</span> A request with HTTP verb DELETE does not delete a blog post
+        </p>
+
+        <div id="done" style="display: none;">
+            <div id="video"></div>
+            <p></p>
+
+            <p>
+                <a href="caching">Next task</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function forEach(obj, each) {
+        for (var i = 0; i < obj.length; i++) {
+            each(obj[i]);
+        }
+    }
+
+    function get(url, ready) {
+        var xhr = new XMLHttpRequest();
+        var uri = encodeURI(url);
+
+        xhr.open("GET", uri, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                ready(xhr);
+            }
+        }
+        xhr.send(null);
+    }
+
+    function deleteCall(url, ready) {
+        var xhr = new XMLHttpRequest();
+        var uri = encodeURI(url);
+
+        xhr.open("DELETE", uri, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                ready(xhr);
+            }
+        }
+        xhr.send(null);
+    }
+
+    function post(url, data, ready) {
+        var xhr = new XMLHttpRequest();
+        var uri = encodeURI(url);
+
+        xhr.open("POST", uri, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                ready(xhr);
+            }
+        };
+        var body = JSON.stringify(data);
+        xhr.send(body);
+    }
+
+    function printResponse(xhr4, selector) {
+        var txt = "HTTP " + xhr4.status + " " + xhr4.statusText;
+
+        var headers = xhr4.getAllResponseHeaders();
+        txt += "\n" + headers;
+
+        txt += "\n" + xhr4.responseText;
+
+        document.querySelector(selector).innerText = txt;
+        document.querySelector(selector).style.display = 'block';
+    }
+
+    function printRequest(html, selector) {
+        document.querySelector(selector).innerHTML = html;
+        document.querySelector(selector).style.display = 'block';
+    }
+    get("/r/blogs", function (xhr) {
+
+        var blogs = JSON.parse(xhr.responseText);
+
+        var blog = blogs[0];
+
+        var newPost = {
+            title: 'Donald Trump\'s IQ is ' + Math.floor(Math.random() * 100) + ' today',
+            content: 'You should not think too bad about him ...'
+        };
+
+        printRequest("POST " + "/r/blogs/" + blog.name + "/posts\n\n" + JSON.stringify(newPost), "#request1");
+
+        post("/r/blogs/" + blog.name + "/posts", newPost, function (xhr2) {
+
+            printRequest("GET " + "/r/blogs/" + blog.name + "/" + newPost.title + "?delete=true", "#request2");
+
+            get("/r/blogs/" + blog.name + "/" + newPost.title + "?delete=true", function (xhr3) {
+
+                printResponse(xhr3, "#response2");
+
+                get("/r/blogs/" + blog.name + "/" + newPost.title, function (xhr4) {
+
+                    if (xhr4.status != 200) {
+                        document.querySelector("#noget").style.display = "block";
+                    } else {
+                        // Did not delete, great!
+                        document.querySelector("#yesget").style.display = "block";
+
+                        // Delete by DELETE
+                        printRequest("DELETE " + "/r/blogs/" + blog.name + "/" + newPost.title, "#request3");
+
+                        deleteCall("/r/blogs/" + blog.name + "/" + newPost.title, function (xhr5) {
+
+                            printResponse(xhr5, "#response3");
+
+                            if (xhr5.status == 405) {
+                                document.querySelector("#no405").style.display = "block";
+                            } else {
+                                document.querySelector("#yes405").style.display = "block";
+
+                                printRequest("GET " + "/r/blogs/" + blog.name + "/" + newPost.title, "#request4");
+
+                                get("/r/blogs/" + blog.name + "/" + newPost.title, function (xhr4) {
+
+                                    printResponse(xhr4, "#response4");
+
+                                    if (xhr4.status != 200) {
+                                        // Did delete by calling DELETE, which is good
+                                        document.querySelector("#yesdelete").style.display = "block";
+
+                                        document.querySelector("#done").style.display = "block";
+                                        document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/WPJ7UKWeYzg?start=10&amp;end=40&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
+                                    } else {
+                                        // Did not delete, wrong!
+                                        document.querySelector("#nodelete").style.display = "block";
+                                    }
+
+                                })
+                            }
+
+
+                        })
+                    }
+
+
+                })
+
+            });
+
+        });
+    });
+
+
+</script>
+#end
+#parse("design.html")

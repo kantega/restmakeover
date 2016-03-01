@@ -17,7 +17,7 @@ public interface BlogPostDao {
      * 
      * @param post the blog post to save to the database 
      */
-    public void saveOrUpdate(BlogPost post);
+    void saveOrUpdate(BlogPost post);
 
     /**
      * Return all blog posts for a given blog.
@@ -25,7 +25,7 @@ public interface BlogPostDao {
      * @param blog The blog to read all blog post for
      * @return List of blog posts in this blog
      */
-    public List<BlogPost> getBlogPosts(Blog blog);
+    List<BlogPost> getBlogPosts(Blog blog);
 
     /**
      * Return a blog post given an id of the blog post.
@@ -33,7 +33,7 @@ public interface BlogPostDao {
      * @param blogPostId The id of the blog post
      * @return The blog post with this ID
      */
-    public BlogPost getBlogPost(long blogPostId);
+    BlogPost getBlogPost(long blogPostId);
 
     /**
      * Return a blog post given the blog and the name of the post.
@@ -42,5 +42,12 @@ public interface BlogPostDao {
      * @param postTitle The name of the blog post
      * @return The blog post if found
      */
-    public BlogPost getBlogPost(Blog blog, String postTitle);
+    BlogPost getBlogPost(Blog blog, String postTitle);
+
+    /**
+     * Deletes the blog post
+     *
+     * @param blogPost The blog post to delete
+     */
+    void delete(BlogPost blogPost);
 }

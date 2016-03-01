@@ -22,10 +22,7 @@ public class BlogUiPlugin {
     private final Filter indexFilter;
 
     @Export
-    private final Filter chartFilter;
-
-    @Export
-    private final Filter chartJsFilter;
+    private final Filter redirectFilter;
 
     public BlogUiPlugin(final ServletBuilder servletBuilder, WebjarsVersions webjarsVersions) {
 
@@ -44,33 +41,9 @@ public class BlogUiPlugin {
             }
         };
 
-        indexFilter = servletBuilder.servlet(indexServlet, "/");
+        indexFilter = servletBuilder.servlet(indexServlet, "/blog/");
 
-        HttpServlet chartServlet = new javax.servlet.http.HttpServlet() {
-            @Override
-            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-                resp.setContentType("text/html");
-                final Map<String, String> versions = webjarsVersions.getVersions();
-                String html = IOUtils.toString(getClass().getResourceAsStream("/chart.html"), "utf-8");
-                for (String version : versions.keySet()) {
-                    String prop = "${" + version + "}";
-                    html = html.replace(prop, versions.get(version));
-                }
+        redirectFilter = servletBuilder.redirectServlet("/blog", "/blog/");
 
-                IOUtils.write(html, resp.getOutputStream());
-            }
-        };
-
-        chartFilter = servletBuilder.servlet(chartServlet, "/chart.html");
-
-        HttpServlet chartJsServlet = new javax.servlet.http.HttpServlet() {
-            @Override
-            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-                resp.setContentType("text/javascript");
-                IOUtils.copy(getClass().getResourceAsStream("/chart.js"), resp.getOutputStream());
-            }
-        };
-
-        chartJsFilter = servletBuilder.servlet(chartJsServlet, "/chart.js");
     }
 }

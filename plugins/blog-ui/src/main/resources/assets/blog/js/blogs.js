@@ -96,13 +96,13 @@ angular.module("blogs", ["ngRoute"])
     .config(function ($routeProvider, $locationProvider) {
         $routeProvider
             .when('/blogs', {
-                templateUrl: 'assets/blog/partials/blogs.html',
+                templateUrl: '/assets/blog/partials/blogs.html',
                 controller: 'ListBlogsController'
             }).when('/blogs/:blogId', {
-                templateUrl: 'assets/blog/partials/blog.html',
+                templateUrl: '/assets/blog/partials/blog.html',
                 controller: 'BlogController'
             }).when('/blogs/:blogId/:blogPost', {
-                templateUrl: 'assets/blog/partials/blogpost.html',
+                templateUrl: '/assets/blog/partials/blogpost.html',
                 controller: 'BlogPostController'
             }).otherwise({
                 redirectTo: "/blogs"

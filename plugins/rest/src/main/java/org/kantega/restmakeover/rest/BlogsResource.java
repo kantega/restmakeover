@@ -119,15 +119,31 @@ public class BlogsResource {
     @GET
     @Path("{blogName}/{postTitle}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBlogPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, @Context HttpServletRequest request) {
+    public Response getBlogPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, @Context HttpServletRequest request, @QueryParam("delete") boolean delete) {
         Blog blog = blogDao.getBlogByName(blogName);
         BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
 
         request.getSession().setAttribute("lastViewedBlogPost", blogPost);
 
+        if(delete) {
+            //blogPostDao.delete(blogPost);
+            //return Response.ok().entity("Deleted").build();
+        }
+
         return Response.ok(new Post(blogPost))
                 .cacheControl(new CacheControl())
                 .build();
+    }
+
+    @DELETE
+    @Path("{blogName}/{postTitle}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteBlogPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, @Context HttpServletRequest request, @QueryParam("delete") boolean delete) {
+        Blog blog = blogDao.getBlogByName(blogName);
+        BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
+
+        blogPostDao.delete(blogPost);
+        return Response.ok().build();
     }
 
     @GET
@@ -153,7 +169,7 @@ public class BlogsResource {
         int prev = Math.max(0, skip - limit);
 
 
-        List<Comment> comments = getComments(blogName, postTitle, skip, limit);
+        List<Comment> comments = getComments(blogName, postTitle, 0, 999);
 
 
         Response.ResponseBuilder response = Response.ok(comments);

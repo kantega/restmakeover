@@ -36,6 +36,7 @@ public class WorkshopUiPlugin {
         templateServlet("index.html", "/workshop-ui/");
         templateServlet("gettingstarted.html", "/workshop-ui/gettingstarted");
         templateServlet("warmup.html", "/workshop-ui/warmup");
+        templateServlet("verbs.html", "/workshop-ui/verbs");
         templateServlet("notfound.html", "/workshop-ui/notfound");
         templateServlet("caching.html", "/workshop-ui/caching");
         templateServlet("etags.html", "/workshop-ui/etags");
@@ -43,6 +44,8 @@ public class WorkshopUiPlugin {
         templateServlet("pagination.html", "/workshop-ui/pagination");
 
         servlets.add(servletBuilder.filter(new SessionAttributeTrackingFilter(), "/*", FilterPhase.PRE_USER));
+
+        servlets.add(servletBuilder.redirectServlet("/", "/workshop-ui/"));
     }
 
     private void templateServlet(String file, String path) {
