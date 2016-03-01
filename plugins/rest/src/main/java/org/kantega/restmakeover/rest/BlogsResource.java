@@ -37,21 +37,32 @@ public class BlogsResource {
     public Response listBlogs(@Context Request request) {
 
 
-        return Response.ok(blogDao.getAllBlogs())
+        List<Blog> allBlogs = blogDao.getAllBlogs();
+        String etag = etag(allBlogs);
+
+        Response.ResponseBuilder responseBuilder = request.evaluatePreconditions(new EntityTag(etag));
+
+        if(responseBuilder != null) {
+            return responseBuilder.build();
+        }
+        return Response.ok(allBlogs)
+                .tag(etag)
                 .build();
     }
 
 
     /**
-     * Returns a String representation of all lastModified dates xor'd
+     * Returns a String representation of the hashcode of blog content
      */
     private String etag(List<Blog> blogs) {
-        long lastMod = 0;
+        StringBuilder content = new StringBuilder();
         for (Blog blog : blogs) {
-            lastMod ^= blog.getLastModified().getTime();
+            content.append(blog.getColor())
+                    .append(blog.getName())
+                    .append(blog.getId());
         }
 
-        return Long.toString(lastMod);
+        return Integer.toString(content.toString().hashCode());
     }
 
     @POST
@@ -70,8 +81,16 @@ public class BlogsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBlog(@PathParam("blogName")String blogName) {
 
-        return Response.ok(blogDao.getBlogByName(blogName))
-                .build();
+        try {
+            Blog blogByName = blogDao.getBlogByName(blogName);
+
+            return Response.ok(blogByName)
+                    .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorMessage("No such blog found"))
+                    .build();
+        }
     }
 
     @GET
@@ -104,7 +123,7 @@ public class BlogsResource {
         Blog blog = blogDao.getBlogByName(blogName);
         BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
 
-        //request.getSession().setAttribute("lastViewedBlogPost", blogPost);
+        request.getSession().setAttribute("lastViewedBlogPost", blogPost);
 
         return Response.ok(new Post(blogPost))
                 .cacheControl(new CacheControl())
@@ -121,20 +140,28 @@ public class BlogsResource {
                                  @QueryParam("limit") int limit) {
 
 
+        /*
         if(limit > 10) {
             return Response.status(Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE).build();
         }
         if(limit == 0) {
             limit = 10;
         }
-        List<Comment> comments = getComments(blogName, postTitle, skip, limit);
 
+*/
         int next = skip + limit;
         int prev = Math.max(0, skip - limit);
+
+
+        List<Comment> comments = getComments(blogName, postTitle, skip, limit);
+
+
         Response.ResponseBuilder response = Response.ok(comments);
+
         if(! getComments(blogName, postTitle, next, 1).isEmpty()) {
             response.link(uriInfo.getRequestUriBuilder().replaceQueryParam("skip", Integer.toString(next)).replaceQueryParam("limit", Integer.toString(limit)).build(), "next");
         }
+
         if(skip != 0) {
             response.link(uriInfo.getRequestUriBuilder().replaceQueryParam("skip", Integer.toString(prev)).replaceQueryParam("limit", Integer.toString(limit)).build(), "prev");
         }
