@@ -157,61 +157,61 @@
                     errs.push({})
                 } else {
                     document.querySelector("#yeswrite").style.display = "block";
+
+                    var urlB = "/r/blogs/" +blog.name + "/" + postB.title;
+
+
+
+                    analyze("/r/blogs/" +blog.name + "/" + postB.title, {}, function(xhr3) {
+
+                        document.querySelector("#requestB").innerText = "GET " + encodeURI(urlB);
+                    });
+
+                    var commentAUrl = urlA + "/comments";
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", commentAUrl, false);
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState == 4) {
+
+                            if(xhr.getResponseHeader("X-Session-Attr-Read")) {
+                                document.querySelector("#noread").style.display = "block";
+                                errs.push({})
+                            } else {
+                                document.querySelector("#yesread").style.display = "block";
+
+                            }
+                        }
+                    };
+                    xhr.setRequestHeader("Content-Type", "application/json")
+                    var randomCat = Math.floor(Math.random()*100);
+                    var author = "Anonymous cat " + randomCat;
+                    var commentJson = JSON.stringify({author: author, content: "Meeeow!!"});
+                    xhr.send(commentJson);
+
+                    document.querySelector("#commentPost").innerText = "POST " + encodeURI(commentAUrl) +"\nContent-Type: application/json\n\n" + commentJson;
+
+
+                    analyze(commentAUrl, {}, function(commentsXhr) {
+                        document.querySelector("#commentsA").innerText = "GET " + encodeURI(commentAUrl) +"\n\n" + commentsXhr.responseText;
+                        var comments = JSON.parse(commentsXhr.responseText);
+                        var lastComment = comments[comments.length-1];
+
+                        if(lastComment && lastComment.author === author) {
+                            document.querySelector("#yescorrect").style.display = "block";
+
+                            document.querySelector("#done").style.display = "block";
+                            document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/YRbakPKgU5Y?start=100&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
+                        } else {
+                            document.querySelector("#nocorrect").style.display = "block";
+                        }
+                    });
+                    var commentBUrl = urlB + "/comments";
+                    analyze(commentBUrl, {}, function(commentsXhr) {
+                        document.querySelector("#commentsB").innerText = "GET " + encodeURI(commentBUrl) +"\n\n" + commentsXhr.responseText;
+                    });
                 }
 
-            });
-
-            var urlB = "/r/blogs/" +blog.name + "/" + postB.title;
-
-
-
-            analyze("/r/blogs/" +blog.name + "/" + postB.title, {}, function(xhr3) {
-
-                document.querySelector("#requestB").innerText = "GET " + encodeURI(urlB);
-            });
-
-            var commentAUrl = urlA + "/comments";
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", commentAUrl, false);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4) {
-
-                    if(xhr.getResponseHeader("X-Session-Attr-Read")) {
-                        document.querySelector("#noread").style.display = "block";
-                        errs.push({})
-                    } else {
-                        document.querySelector("#yesread").style.display = "block";
-
-                    }
-                }
-            };
-            xhr.setRequestHeader("Content-Type", "application/json")
-            var randomCat = Math.floor(Math.random()*100);
-            var author = "Anonymous cat " + randomCat;
-            var commentJson = JSON.stringify({author: author, content: "Meeeow!!"});
-            xhr.send(commentJson);
-
-            document.querySelector("#commentPost").innerText = "POST " + encodeURI(commentAUrl) +"\nContent-Type: application/json\n\n" + commentJson;
-
-
-            analyze(commentAUrl, {}, function(commentsXhr) {
-                document.querySelector("#commentsA").innerText = "GET " + encodeURI(commentAUrl) +"\n\n" + commentsXhr.responseText;
-                var comments = JSON.parse(commentsXhr.responseText);
-                var lastComment = comments[comments.length-1];
-
-                if(lastComment && lastComment.author === author) {
-                    document.querySelector("#yescorrect").style.display = "block";
-
-                    document.querySelector("#done").style.display = "block";
-                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/YRbakPKgU5Y?start=100&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
-
-                } else {
-                    document.querySelector("#nocorrect").style.display = "block";
-                }
-            });
-            var commentBUrl = urlB + "/comments";
-            analyze(commentBUrl, {}, function(commentsXhr) {
-                document.querySelector("#commentsB").innerText = "GET " + encodeURI(commentBUrl) +"\n\n" + commentsXhr.responseText;
             });
         });
 

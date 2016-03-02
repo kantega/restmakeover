@@ -163,32 +163,11 @@ public class BlogsResource {
                                  @QueryParam("limit") int limit) {
 
 
-        /*
-        if(limit > 10) {
-            return Response.status(Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE).build();
-        }
-        if(limit == 0) {
-            limit = 10;
-        }
-
-*/
-        int next = skip + limit;
-        int prev = Math.max(0, skip - limit);
-
 
         List<Comment> comments = getComments(blogName, postTitle, 0, 999);
 
 
-        Response.ResponseBuilder response = Response.ok(comments);
-
-        if(! getComments(blogName, postTitle, next, 1).isEmpty()) {
-            response.link(uriInfo.getRequestUriBuilder().replaceQueryParam("skip", Integer.toString(next)).replaceQueryParam("limit", Integer.toString(limit)).build(), "next");
-        }
-
-        if(skip != 0) {
-            response.link(uriInfo.getRequestUriBuilder().replaceQueryParam("skip", Integer.toString(prev)).replaceQueryParam("limit", Integer.toString(limit)).build(), "prev");
-        }
-        return response.build();
+        return Response.ok(comments).build();
     }
 
     private List<Comment> getComments(String blogName, String postTitle, int skip, int limit) {
