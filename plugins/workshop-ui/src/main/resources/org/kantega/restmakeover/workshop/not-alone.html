@@ -2,38 +2,23 @@
 <h1 class="extruded">Locking</h1>
 
 <p>
-    From time to time you will want to delete a blog post that is already created.
+    You are not alone. More than one person may try to edit a blog post at the same time.
 </p>
-
 <p>
-    In your API, we delete a blog post by making a GET request to the blog post URL with the http parameter
-    "delete=true". This is a really, really bad practise.
+    If two editors make changes and then save the same post simultaneously, the last saver "wins".
 </p>
-
 <p>
-    HTTP provides the verbs GET, PUT, DELETE and POST that should be used to get, update, delete and create resource
-    instances. You should always use
-<ul>
-    <li>GET to retrieve data</li>
-    <li>PUT to update existing data</li>
-    <li>DELETE to delete data</li>
-    <li>POST to insert new data</li>
-</ul>
+    ETag comes to our rescue.
 </p>
-
-
 <p>
-    Your goal in this task is to
-<ul>
-    <li>remove the bad code that deletes the blog post when the user makes an HTTP GET request</li>
-    <li>write new code that deletes the blog post when the user makes an HTTP DELETE request</li>
-</ul>
+    Your goal in this task is to change the API so that the last saver does not inadvertently overwrite changes
+    saved by someone else.
 </p>
 
 <pre id="request1"></pre>
 <pre id="response1"></pre>
 
-<pre id="request2" style="display: none"></pre>
+<pre id="request2" style="display: none; background-color: #FFF2D5"></pre>
 <pre id="response2" style="display: none"></pre>
 
 <pre id="request3" style="display: none"></pre>
