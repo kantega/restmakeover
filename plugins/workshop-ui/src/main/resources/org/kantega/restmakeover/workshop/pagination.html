@@ -54,6 +54,10 @@
             <span class="label label-success">YES!</span> Your rel="next" URL has <code>skip=2</code> and <code>limit=2</code>
         </p>
 
+        <p id="novalidnext" style="display: none">
+            <span class="label label-danger">FAIL</span> When following your <code>rel="next"</code> link, we expected 200, but got <span class="nextstatus"></span>
+        </p>
+
         <p id="noprev" style="display: none">
             <span class="label label-danger">FAIL</span> When following your <code>rel="next"</code> link, we expected to find a <code>rel="prev"</code> link header with <code>skip=0</code> and <code>limit=2</code>
         </p>
@@ -89,16 +93,18 @@
         xhr.open("GET", url, true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4) {
-                ready(JSON.parse(xhr.responseText), xhr);
+                ready(xhr);
             }
         }
         xhr.send(null);
     }
 
-    analyze("/r/blogs",function (blogs) {
+    analyze("/r/blogs",function (xhr1) {
+        var blogs = JSON.parse(xhr1.responseText);
         var blog = blogs[0];
-        analyze("/r/blogs/" + encodeURIComponent(blog.name) +"/posts",function (posts) {
+        analyze("/r/blogs/" + encodeURIComponent(blog.name) +"/posts",function (xhr2) {
 
+            var posts = JSON.parse(xhr2.responseText)
             var post = posts[0];
             if(post.commentCount < 5) {
                 document.querySelector("#nocomments").style.display="block";
@@ -113,15 +119,17 @@
                 var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(post.title) +"/comments?skip=0&limit=2";
                 document.querySelector("#request").textContent = "GET " + url;
 
-                analyze(url, function (comments, xhr) {
+                analyze(url, function (xhr3) {
 
-                    var txt = "HTTP " + xhr.status + " " + xhr.statusText;
+                    var comments = JSON.parse(xhr3.responseText)
+
+                    var txt = "HTTP " + xhr3.status + " " + xhr3.statusText;
 
 
-                    var headers = xhr.getAllResponseHeaders();
+                    var headers = xhr3.getAllResponseHeaders();
                     txt +="\n" + headers;
 
-                    txt +="\n" + xhr.responseText;
+                    txt +="\n" + xhr3.responseText;
 
                     document.querySelector("#response").innerText= txt;
 
@@ -134,7 +142,7 @@
                     } else {
                         document.querySelector("#yestwo").style.display = "block";
 
-                        var links = parseLinks(xhr.getResponseHeader("Link"));
+                        var links = parseLinks(xhr3.getResponseHeader("Link"));
 
                         var next = links["next"];
                         if(!next ) {
@@ -151,29 +159,42 @@
 
                                 document.querySelector("#second").style.display = "block";
 
-                                document.querySelector("#request2").innerText = "GET " + next.url.substr(next.url.indexOf("/r/"));
+                                var geturl = next.url;
+                                if(geturl.indexOf("http://") == 0) {
+                                    geturl = geturl.substr(next.url.indexOf("/r/"));
+                                }
+                                document.querySelector("#request2").innerText = "GET " + geturl;
 
-                                analyze(next.url, function(nextComments, nextxhr) {
+                                analyze(next.url, function(xhr4) {
 
-                                    var txt = "HTTP " + nextxhr.status + " " + nextxhr.statusText;
+                                    var headers = xhr4.getAllResponseHeaders();
+                                    var txt = "HTTP " + xhr4.status + " " + xhr4.statusText;
 
-
-                                    var headers = nextxhr.getAllResponseHeaders();
                                     txt +="\n" + headers;
 
-                                    txt +="\n" + nextxhr.responseText;
+                                    txt +="\n" + xhr4.responseText;
 
                                     document.querySelector("#response2").innerText = txt;
 
-                                    var links = parseLinks(nextxhr.getResponseHeader("Link"));
-
-                                    var prev = links["prev"];
-                                    if(!prev ) {
-                                        document.querySelector("#noprev").style.display = "block";
+                                    if(xhr4.status != 200) {
+                                        document.querySelector("#novalidnext").style.display = "block";
+                                        forEach(document.querySelectorAll(".nextstatus"), function(e) {e.innerHTML = xhr4.status});
                                     } else {
-                                        document.querySelector("#yesprev").style.display = "block";
-                                        document.querySelector("#done").style.display = "block";
-                                        document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/UIrEM_9qvZU?start=626&amp;end=660&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                        var nextComments = JSON.parse(xhr4.responseText)
+
+
+
+
+                                        var links = parseLinks(xhr4.getResponseHeader("Link"));
+
+                                        var prev = links["prev"];
+                                        if(!prev ) {
+                                            document.querySelector("#noprev").style.display = "block";
+                                        } else {
+                                            document.querySelector("#yesprev").style.display = "block";
+                                            document.querySelector("#done").style.display = "block";
+                                            document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/UIrEM_9qvZU?start=626&amp;end=660&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                        }
                                     }
                                 });
 
