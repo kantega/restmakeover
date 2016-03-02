@@ -159,8 +159,8 @@ public class BlogsResource {
     public Response getCommments(@PathParam("blogName") String blogName,
                                  @PathParam("postTitle") String postTitle,
                                  @Context UriInfo uriInfo,
-                                 @QueryParam("skip") int skip,
-                                 @QueryParam("limit") int limit) {
+                                 @QueryParam("skip") Integer skip,
+                                 @QueryParam("limit") Integer limit) {
 
 
 
