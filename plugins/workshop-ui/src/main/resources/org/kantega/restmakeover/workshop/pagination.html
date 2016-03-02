@@ -190,7 +190,7 @@
         var links = {};
         if(header) {
             var split = header.split(",")
-            var pattern = /.*<(.*)>; rel="(.*)"/g;
+            var pattern = /.*<(.*)>; *rel="(.*)"/g;
             for(var i = 0; i < split.length; i++) {
                 pattern.lastIndex = 0;
                 var groups = pattern.exec(split[i]);
