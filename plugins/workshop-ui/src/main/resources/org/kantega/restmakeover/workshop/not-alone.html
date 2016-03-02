@@ -1,5 +1,5 @@
 #section("content")
-<h1 class="extruded">Locking</h1>
+<h1 class="extruded">Locking without blocking</h1>
 
 <p>
     You are not alone. More than one person may try to edit a blog post at the same time.
@@ -8,7 +8,7 @@
     If two editors make changes and then save the same post simultaneously, the last saver "wins".
 </p>
 <p>
-    ETag comes to our rescue.
+    ETag comes to our rescue with support for <a href="http://fideloper.com/etags-and-optimistic-concurrency-control">optimistic concurrency control</a>.
 </p>
 <p>
     Your goal in this task is to change the API so that the last saver does not inadvertently overwrite changes
