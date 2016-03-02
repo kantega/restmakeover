@@ -13,10 +13,7 @@ public class UserInfoResource {
 
 
     // We should repond to GET requests on path {username} and return application/json
-    @GET
-    @Path("{username}")
-    @Produces("application/json")
-    public User getUserByUsername(@PathParam("username") String username) {
+    public User getUserByUsername(String username) {
         return new User(username, " John Doe");
     }
 }

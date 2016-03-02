@@ -104,7 +104,7 @@
                 document.querySelector("#nocomments").style.display="block";
                 forEach(document.querySelectorAll(".bloglink"), function(a) {
                     a.textContent = post.title;
-                    a.href = "/#/blogs/" + encodeURIComponent(blog.name) +"/" + encodeURIComponent(post.title);
+                    a.href = "/blog/#/blogs/" + encodeURIComponent(blog.name) +"/" + encodeURIComponent(post.title);
                 });
             } else {
 

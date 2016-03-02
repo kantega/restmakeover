@@ -38,15 +38,8 @@ public class BlogsResource {
 
 
         List<Blog> allBlogs = blogDao.getAllBlogs();
-        String etag = etag(allBlogs);
 
-        Response.ResponseBuilder responseBuilder = request.evaluatePreconditions(new EntityTag(etag));
-
-        if(responseBuilder != null) {
-            return responseBuilder.build();
-        }
         return Response.ok(allBlogs)
-                .tag(etag)
                 .build();
     }
 
@@ -96,16 +89,11 @@ public class BlogsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBlog(@PathParam("blogName")String blogName) {
 
-        try {
-            Blog blogByName = blogDao.getBlogByName(blogName);
 
-            return Response.ok(blogByName)
-                    .build();
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(new ErrorMessage("No such blog found"))
-                    .build();
-        }
+        Blog blogByName = blogDao.getBlogByName(blogName);
+
+        return Response.ok(blogByName)
+                .build();
     }
 
     @GET
@@ -141,26 +129,16 @@ public class BlogsResource {
         request.getSession().setAttribute("lastViewedBlogPost", blogPost);
 
         if(delete) {
-            //blogPostDao.delete(blogPost);
-            //return Response.ok().entity("Deleted").build();
+            blogPostDao.delete(blogPost);
+            return Response.ok().entity("Deleted").build();
         }
 
         return Response.ok(new Post(blogPost))
                 .cacheControl(new CacheControl())
-                .tag(new EntityTag(etag(blogPost)))
                 .build();
     }
 
-    @DELETE
-    @Path("{blogName}/{postTitle}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteBlogPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, @Context HttpServletRequest request, @QueryParam("delete") boolean delete) {
-        Blog blog = blogDao.getBlogByName(blogName);
-        BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
 
-        blogPostDao.delete(blogPost);
-        return Response.ok().build();
-    }
 
     @PUT
     @Path("{blogName}/{postTitle}")
@@ -168,13 +146,6 @@ public class BlogsResource {
     public Response updateBlogPost(@Context Request request, @PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, NewPost newPostData) {
         Blog blog = blogDao.getBlogByName(blogName);
         BlogPost post = blogPostDao.getBlogPost(blog, postTitle);
-
-        Response.ResponseBuilder responseBuilder = request.evaluatePreconditions(new EntityTag(etag(post)));
-        if(responseBuilder != null) {
-            return responseBuilder.build();
-        //} else {
-        //    return Response.status(412).build();
-        }
 
         post.setContent(newPostData.getContent());
         post.setPublishDate(new Timestamp(System.currentTimeMillis()));
@@ -232,9 +203,8 @@ public class BlogsResource {
 
         Blog blog = blogDao.getBlogByName(blogName);
 
-        //BlogPost blogPost = (BlogPost) req.getSession().getAttribute("lastViewedBlogPost");
+        BlogPost blogPost = (BlogPost) req.getSession().getAttribute("lastViewedBlogPost");
 
-        BlogPost blogPost = blogPostDao.getBlogPost(blog, postTitle);
 
 
         BlogPostComment c = new BlogPostComment(blogPost);
