@@ -13,6 +13,9 @@
     <pre id="request"></pre>
     <pre id="response"></pre>
 
+    <pre id="request3" style="display: none"></pre>
+    <pre id="response3" style="display: none"></pre>
+
     <div id="second" style="display: none">
         <p>Following the <code>rel="next"</code> link:</p>
         <pre id="request2"></pre>
@@ -37,6 +40,11 @@
         <p id="yestwo" style="display: none">
             <span class="label label-success">YES!</span> Your resource returned 2 comments when requested with <code>limit=2</code>
         </p>
+
+        <p id="nodefault" style="display: none">
+            <span class="label label-danger">FAIL</span> Expected comments resource to still work without limit or skip parameters.
+        </p>
+
 
         <p id="nonext" style="display: none">
             <span class="label label-danger">FAIL</span> Expected to see a <code>Link</code> header with URL for <code>rel="next"</code>
@@ -133,73 +141,96 @@
 
                     document.querySelector("#response").innerText= txt;
 
-
-                    document.querySelector("#request").textContent = "GET " + url;
-
                     if (comments.length != 2) {
                         document.querySelector("#notwo").style.display = "block";
                         forEach(document.querySelectorAll(".numcomments"), function(e) {e.textContent = comments.length})
                     } else {
-                        document.querySelector("#yestwo").style.display = "block";
 
-                        var links = parseLinks(xhr3.getResponseHeader("Link"));
+                        var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(post.title) +"/comments";
 
-                        var next = links["next"];
-                        if(!next ) {
-                            document.querySelector("#nonext").style.display = "block";
-                        } else {
-                            document.querySelector("#yesnext").style.display = "block";
+                        analyze(url, function (xhr4) {
 
-                            forEach(document.querySelectorAll(".nexturl"), function(e) {e.innerText = next.url});
-                            if(next.params["skip"] !== "2" || next.params["limit"] !== "2") {
+                            if(xhr4.status != 200) {
+                                document.querySelector("#nodefault").style.display = "block";
+                                document.querySelector("#request3").innerText = "GET " + url;
+                                document.querySelector("#request3").style.display = "block";
+                                document.querySelector("#response3").style.display = "block";
 
-                                document.querySelector("#noparams").style.display = "block";
+                                var headers = xhr4.getAllResponseHeaders();
+                                var txt = "HTTP " + xhr4.status + " " + xhr4.statusText;
+
+                                txt +="\n" + headers;
+
+                                txt +="\n" + xhr4.responseText;
+
+                                document.querySelector("#response3").innerText = txt;
+
+
                             } else {
-                                document.querySelector("#yesparams").style.display = "block";
+                                document.querySelector("#yestwo").style.display = "block";
 
-                                document.querySelector("#second").style.display = "block";
+                                var links = parseLinks(xhr3.getResponseHeader("Link"));
 
-                                var geturl = next.url;
-                                if(geturl.indexOf("http://") == 0) {
-                                    geturl = geturl.substr(next.url.indexOf("/r/"));
-                                }
-                                document.querySelector("#request2").innerText = "GET " + geturl;
+                                var next = links["next"];
+                                if(!next ) {
+                                    document.querySelector("#nonext").style.display = "block";
 
-                                analyze(next.url, function(xhr4) {
+                                } else {
+                                    document.querySelector("#yesnext").style.display = "block";
 
-                                    var headers = xhr4.getAllResponseHeaders();
-                                    var txt = "HTTP " + xhr4.status + " " + xhr4.statusText;
+                                    forEach(document.querySelectorAll(".nexturl"), function(e) {e.innerText = next.url});
+                                    if(next.params["skip"] !== "2" || next.params["limit"] !== "2") {
 
-                                    txt +="\n" + headers;
-
-                                    txt +="\n" + xhr4.responseText;
-
-                                    document.querySelector("#response2").innerText = txt;
-
-                                    if(xhr4.status != 200) {
-                                        document.querySelector("#novalidnext").style.display = "block";
-                                        forEach(document.querySelectorAll(".nextstatus"), function(e) {e.innerHTML = xhr4.status});
+                                        document.querySelector("#noparams").style.display = "block";
                                     } else {
-                                        var nextComments = JSON.parse(xhr4.responseText)
+                                        document.querySelector("#yesparams").style.display = "block";
 
+                                        document.querySelector("#second").style.display = "block";
 
-
-
-                                        var links = parseLinks(xhr4.getResponseHeader("Link"));
-
-                                        var prev = links["prev"];
-                                        if(!prev ) {
-                                            document.querySelector("#noprev").style.display = "block";
-                                        } else {
-                                            document.querySelector("#yesprev").style.display = "block";
-                                            document.querySelector("#done").style.display = "block";
-                                            document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/UIrEM_9qvZU?start=626&amp;end=660&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                        var geturl = next.url;
+                                        if(geturl.indexOf("http://") == 0) {
+                                            geturl = geturl.substr(next.url.indexOf("/r/"));
                                         }
-                                    }
-                                });
+                                        document.querySelector("#request2").innerText = "GET " + geturl;
 
+                                        analyze(next.url, function(xhr5) {
+
+                                            var headers = xhr5.getAllResponseHeaders();
+                                            var txt = "HTTP " + xhr5.status + " " + xhr5.statusText;
+
+                                            txt +="\n" + headers;
+
+                                            txt +="\n" + xhr5.responseText;
+
+                                            document.querySelector("#response2").innerText = txt;
+
+                                            if(xhr5.status != 200) {
+                                                document.querySelector("#novalidnext").style.display = "block";
+                                                forEach(document.querySelectorAll(".nextstatus"), function(e) {e.innerHTML = xhr5.status});
+                                            } else {
+
+                                                var links = parseLinks(xhr5.getResponseHeader("Link"));
+
+                                                var prev = links["prev"];
+                                                if(!prev ) {
+                                                    document.querySelector("#noprev").style.display = "block";
+                                                } else {
+                                                    document.querySelector("#yesprev").style.display = "block";
+                                                    document.querySelector("#done").style.display = "block";
+                                                    document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/UIrEM_9qvZU?start=626&amp;end=660&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                                }
+                                            }
+                                        });
+
+                                    }
+                                }
                             }
-                        }
+
+                        });
+
+
+
+
                     }
                 });
             }
