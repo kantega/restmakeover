@@ -29,7 +29,7 @@ Start the application server.
 
 The application server will reload the code when you write, so you will never have to restart anything.
 
-NB! Maven requires you to set JAVA_HOME before you start. Take a look into the JAVA_HOME.md file if you run into problems with this.
+NB! Maven requires you to set JAVA_HOME before you start. Take a look into the [JAVA_HOME.md](JAVA_HOME.md) file if you run into problems with this.
 
 <pre>
 cd webapps
