@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -120,7 +121,7 @@ public class BlogsResource {
     }
 
     @GET
-    @Path("{blogName}/{postTitle}")
+    @Path("{blogName}/posts/{postTitle}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBlogPost(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, @Context HttpServletRequest request, @QueryParam("delete") boolean delete) {
         Blog blog = blogDao.getBlogByName(blogName);
@@ -141,7 +142,7 @@ public class BlogsResource {
 
 
     @PUT
-    @Path("{blogName}/{postTitle}")
+    @Path("{blogName}/posts/{postTitle}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateBlogPost(@Context Request request, @PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, NewPost newPostData) {
         Blog blog = blogDao.getBlogByName(blogName);
@@ -154,7 +155,7 @@ public class BlogsResource {
     }
 
     @GET
-    @Path("{blogName}/{postTitle}/comments")
+    @Path("{blogName}/posts/{postTitle}/comments")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCommments(@PathParam("blogName") String blogName,
                                  @PathParam("postTitle") String postTitle,
@@ -176,9 +177,9 @@ public class BlogsResource {
     }
 
     @POST
-    @Path("{blogName}/{postTitle}/comments")
+    @Path("{blogName}/posts/{postTitle}/comments")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addComment(@PathParam("blogName") String blogName, @PathParam("postTitle") String postTitle, NewComment comment, @Context HttpServletRequest req) {
+    public Response addComment(@PathParam("blogName") String blogName, NewComment comment, @Context HttpServletRequest req) {
 
         Blog blog = blogDao.getBlogByName(blogName);
 

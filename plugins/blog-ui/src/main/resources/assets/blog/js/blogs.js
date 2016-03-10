@@ -48,7 +48,7 @@ angular.module("blogs", ["ngRoute"])
         $scope.addPost = function(post) {
             $http.post("/r/blogs/" +$scope.blog.name +"/posts", post)
                 .success(function (data) {
-                    $location.path("/blogs/" + $scope.blog.name +"/" + $scope.post.title);
+                    $location.path("/blogs/" + $scope.blog.name +"/posts/" + $scope.post.title);
                 })
         }
 
@@ -63,13 +63,13 @@ angular.module("blogs", ["ngRoute"])
                     $rootScope.backStyle = {'background-color': data.color};
                 });
 
-            $http.get("/r/blogs/" + $routeParams.blogId +"/" + $routeParams.blogPost)
+            $http.get("/r/blogs/" + $routeParams.blogId +"/posts/" + $routeParams.blogPost)
                 .success(function (data) {
                     $scope.post = data;
                 });
 
 
-            $http.get("/r/blogs/" + $routeParams.blogId +"/" + $routeParams.blogPost +"/comments")
+            $http.get("/r/blogs/" + $routeParams.blogId +"/posts/" + $routeParams.blogPost +"/comments")
                 .success(function (data) {
                     $scope.comments = data;
                 });
@@ -86,7 +86,7 @@ angular.module("blogs", ["ngRoute"])
         $scope.comment = {author: "John Doe", content: "I really likez..."};
 
         $scope.addComment = function(blog, post, comment) {
-            $http.post("/r/blogs/" +blog.name +"/" + post.title + "/comments" , comment)
+            $http.post("/r/blogs/" +blog.name +"/posts/" + post.title + "/comments" , comment)
                 .success(function (data) {
                     loadData();
                 })
@@ -101,7 +101,7 @@ angular.module("blogs", ["ngRoute"])
             }).when('/blogs/:blogId', {
                 templateUrl: '/assets/blog/partials/blog.html',
                 controller: 'BlogController'
-            }).when('/blogs/:blogId/:blogPost', {
+            }).when('/blogs/:blogId/posts/:blogPost', {
                 templateUrl: '/assets/blog/partials/blogpost.html',
                 controller: 'BlogPostController'
             }).otherwise({

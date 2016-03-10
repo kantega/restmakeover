@@ -72,6 +72,14 @@
             <span class="label label-danger">FAIL</span> A request with HTTP verb DELETE does not delete a blog post
         </p>
 
+        <p id="no200content" style="display: none">
+            <span class="label label-danger">FAIL</span> The status code is 200, but your response did not have any content (tip: use 204)
+        </p>
+
+        <p id="nocontenttype" style="display: none">
+            <span class="label label-danger">FAIL</span> You did set Content-Type: application/json, but your content is not JSON
+        </p>
+
         <div id="done" style="display: none;">
             <div id="video"></div>
             <p></p>
@@ -149,6 +157,16 @@
         document.querySelector(selector).innerHTML = html;
         document.querySelector(selector).style.display = 'block';
     }
+
+    function isJson(response) {
+        try {
+            JSON.parse(response);
+        }
+        catch (err) {
+            return false;
+        }
+        return response.contains("{");
+    }
     get("/r/blogs", function (xhr) {
 
         var blogs = JSON.parse(xhr.responseText);
@@ -164,13 +182,13 @@
 
         post("/r/blogs/" + blog.name + "/posts", newPost, function (xhr2) {
 
-            printRequest("GET " + "/r/blogs/" + blog.name + "/" + newPost.title + "?delete=true", "#request2");
+            printRequest("GET " + "/r/blogs/" + blog.name + "/posts/" + newPost.title + "?delete=true", "#request2");
 
-            get("/r/blogs/" + blog.name + "/" + newPost.title + "?delete=true", function (xhr3) {
+            get("/r/blogs/" + blog.name + "/posts/" + newPost.title + "?delete=true", function (xhr3) {
 
                 printResponse(xhr3, "#response2");
 
-                get("/r/blogs/" + blog.name + "/" + newPost.title, function (xhr4) {
+                get("/r/blogs/" + blog.name + "/posts/" + newPost.title, function (xhr4) {
 
                     if (xhr4.status != 200) {
                         document.querySelector("#noget").style.display = "block";
@@ -179,9 +197,9 @@
                         document.querySelector("#yesget").style.display = "block";
 
                         // Delete by DELETE
-                        printRequest("DELETE " + "/r/blogs/" + blog.name + "/" + newPost.title, "#request3");
+                        printRequest("DELETE " + "/r/blogs/" + blog.name + "/posts/" + newPost.title, "#request3");
 
-                        deleteCall("/r/blogs/" + blog.name + "/" + newPost.title, function (xhr5) {
+                        deleteCall("/r/blogs/" + blog.name + "/posts/" + newPost.title, function (xhr5) {
 
                             printResponse(xhr5, "#response3");
 
@@ -190,25 +208,32 @@
                             } else {
                                 document.querySelector("#yes405").style.display = "block";
 
-                                printRequest("GET " + "/r/blogs/" + blog.name + "/" + newPost.title, "#request4");
+                                printRequest("GET " + "/r/blogs/" + blog.name + "/posts/" + newPost.title, "#request4");
 
-                                get("/r/blogs/" + blog.name + "/" + newPost.title, function (xhr4) {
+                                if(xhr5.status == 200 && xhr5.responseText.length == 0) {
+                                    document.querySelector("#no200content").style.display = "block";
+                                } else if(xhr5.status == 200 && xhr5.getResponseHeader("Content-Type").indexOf("application/json") == 0 && !isJson(xhr5.responseText)) {
+                                    document.querySelector("#nocontenttype").style.display = "block";
+                                } else {
+                                    get("/r/blogs/" + blog.name + "/posts/" + newPost.title, function (xhr4) {
 
-                                    printResponse(xhr4, "#response4");
+                                        printResponse(xhr4, "#response4");
 
-                                    if (xhr4.status != 200) {
-                                        // Did delete by calling DELETE, which is good
-                                        document.querySelector("#yesdelete").style.display = "block";
+                                        if (xhr4.status != 200) {
+                                            // Did delete by calling DELETE, which is good
+                                            document.querySelector("#yesdelete").style.display = "block";
 
-                                        document.querySelector("#done").style.display = "block";
-                                        document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/WPJ7UKWeYzg?start=10&amp;end=40&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                            document.querySelector("#done").style.display = "block";
+                                            document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/WPJ7UKWeYzg?start=10&amp;end=40&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
 
-                                    } else {
-                                        // Did not delete, wrong!
-                                        document.querySelector("#nodelete").style.display = "block";
-                                    }
+                                        } else {
+                                            // Did not delete, wrong!
+                                            document.querySelector("#nodelete").style.display = "block";
+                                        }
 
-                                })
+                                    })
+                                }
+
                             }
 
 

@@ -1,24 +1,39 @@
 #section("content")
-<h1 class="extruded">Locking without blocking</h1>
+<h1 class="extruded">Versioning</h1>
 
 <p>
-    You are not alone. More than one person may try to edit a blog post at the same time.
+    Your API
 </p>
+
 <p>
-    If two editors make changes and then save the same post simultaneously, the last saver "wins".
+    In your API, we delete a blog post by making a GET request to the blog post URL with the http parameter
+    "delete=true". This is a really, really bad practise.
 </p>
+
 <p>
-    ETag comes to our rescue with support for <a href="http://fideloper.com/etags-and-optimistic-concurrency-control">optimistic concurrency control</a>.
+    HTTP provides the verbs GET, PUT, DELETE and POST that should be used to get, update, delete and create resource
+    instances. You should always use
+<ul>
+    <li>GET to retrieve data</li>
+    <li>PUT to update existing data</li>
+    <li>DELETE to delete data</li>
+    <li>POST to insert new data</li>
+</ul>
 </p>
+
+
 <p>
-    Your goal in this task is to change the API so that the last saver does not inadvertently overwrite changes
-    saved by someone else.
+    Your goal in this task is to
+<ul>
+    <li>remove the bad code that deletes the blog post when the user makes an HTTP GET request</li>
+    <li>write new code that deletes the blog post when the user makes an HTTP DELETE request</li>
+</ul>
 </p>
 
 <pre id="request1"></pre>
 <pre id="response1"></pre>
 
-<pre id="request2" style="display: none; background-color: #FFF2D5"></pre>
+<pre id="request2" style="display: none"></pre>
 <pre id="response2" style="display: none"></pre>
 
 <pre id="request3" style="display: none"></pre>
@@ -70,7 +85,7 @@
             <p></p>
 
             <p>
-                <a href="enemy-of-the-state">Next task</a>
+                <a href="caching">Next task</a>
             </p>
         </div>
     </div>
@@ -173,9 +188,9 @@
             var posts = JSON.parse(xhr2.responseText);
             var post = posts[0];
 
-            printRequest("GET " + "/r/blogs/" + blog.name + "/posts/" + post.title, "#request1");
+            printRequest("GET " + "/r/blogs/" + blog.name + "/" + post.title, "#request1");
 
-            get("/r/blogs/" + blog.name + "/posts/" + post.title, function (xhr3) {
+            get("/r/blogs/" + blog.name + "/" + post.title, function (xhr3) {
 
                 printResponse(xhr3, "#response1");
                 var firstEtag = xhr3.getResponseHeader("ETag");
@@ -192,20 +207,20 @@
                     };
 
                     printRequest("Meanwhile ...\nYour assistant editor updated the same blog post from his home office", "#request2");
-                    put("/r/blogs/" + blog.name + "/posts/" + post.title, postByAnotherClient, firstEtag, function (xhr4) {
+                    put("/r/blogs/" + blog.name + "/" + post.title, postByAnotherClient, firstEtag, function (xhr4) {
 
                         if(xhr4.status !== 200) {
                             printResponse(xhr4, "#response2");
                             document.querySelector("#noassistantchanged").style.display = "block";
                         } else {
 
-                            get("/r/blogs/" + blog.name + "/posts/" + post.title, function (xhr4) {
+                            get("/r/blogs/" + blog.name + "/" + post.title, function (xhr4) {
 
                                 var anotherClientsEtag = xhr4.getResponseHeader("ETag");
                                 printRequest("Meanwhile ...\nYour assistant editor updated the same blog post from his home office\nThe Etag is now " + anotherClientsEtag, "#request2");
                                 if(anotherClientsEtag == firstEtag) {
                                     document.querySelector("#noetagchanged").style.display = "block";
-                                    printRequest("GET /r/blogs/" + blog.name + "/posts/" + post.title, "#request3");
+                                    printRequest("GET /r/blogs/" + blog.name + "/" + post.title, "#request3");
                                     printResponse(xhr4, "#response3");
                                 } else {
 
@@ -215,8 +230,8 @@
                                         content: post.content + "\n\n" + newText
                                     };
 
-                                    printRequest("PUT /r/blogs/" + blog.name + "/posts/" + post.title + '\nIf-Match: ' + firstEtag + '\n\n' + JSON.stringify(postByThisClient), "#request4");
-                                    put("/r/blogs/" + blog.name + "/posts/" + post.title, postByThisClient, firstEtag, function (xhr5) {
+                                    printRequest("PUT /r/blogs/" + blog.name + "/" + post.title + '\nIf-Match: ' + firstEtag + '\n\n' + JSON.stringify(postByThisClient), "#request4");
+                                    put("/r/blogs/" + blog.name + "/" + post.title, postByThisClient, firstEtag, function (xhr5) {
 
                                         printResponse(xhr5, "#response4");
 

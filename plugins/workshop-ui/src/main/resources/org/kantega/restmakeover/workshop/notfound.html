@@ -1,22 +1,23 @@
 #section("content")
 <h1 class="extruded">Expect the unexpected</h1>
 
-<p>We took a look at your API, and honesty and found the use of HTTP response codes
+<p>We took a look at your API, and found the use of HTTP response codes
 to be pretty lazy</p>
 
 <p>
-    Let's try to ask for a blog which does not exist.
+    We tried to ask for a blog which does not exist and you returned HTTP 500.
 </p>
 <p>
-    Returning a 500 (Server Error) when something is just not found is not very polite?
-</p>
-
-<p>
-    (This time, find <code>BlogsResource.java</code>, it contains all the methods you may need to change in this task :-)
+    Returning a 500 (Server Error) when a resource is not found is not a correct response. You may refer to <a target="_blank" href="http://www.restapitutorial.com/httpstatuscodes.html">this list</a>
+    if you are unsure of the correct HTTP response.
 </p>
 
 <p>
-    (There is a class <code>ErrorMessage</code> which can be used to return custom error response content)
+    This time, find <code>BlogsResource.java</code>, it contains all the methods you may need to change in this task.
+</p>
+
+<p>
+    There is a class <code>ErrorMessage</code> which can be used to return custom error response content.
 </p>
 <pre id="request"></pre>
 

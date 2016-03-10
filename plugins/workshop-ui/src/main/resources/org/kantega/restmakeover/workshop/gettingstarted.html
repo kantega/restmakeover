@@ -1,7 +1,10 @@
 #section("content")
 <h1 class="extruded">Getting started</h1>
 
-<p>In this warm-up task you will get to know the blog application</p>
+<p>In this warm-up task you will get to know the blog application. This is the API that you will improve.</p>
+
+<p>When you are done, come back to this page and refresh it. Note the test results in the lower right corner.</p>
+
 <p>Your goal is to create at least:</p>
 <ul>
     <li>One blog</li>
@@ -93,7 +96,7 @@
                     forEach(document.querySelectorAll(".blogposttitle"), function(e) {e.innerText = posts[0].title;});
                     document.querySelector("#yespost").style.display = "block";
 
-                    analyze("/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(posts[0].title) +"/comments"
+                    analyze("/r/blogs/" + encodeURIComponent(blogs[0].name) +"/posts/" + encodeURIComponent(posts[0].title) +"/comments"
                             , function (comments) {
                                 if (comments.length == 0) {
                                     document.querySelector("#nocomment").style.display = "block";
@@ -101,7 +104,7 @@
                                     forEach(document.querySelectorAll(".commentauthor"), function(e) {e.innerText = comments[0].author;});
                                     document.querySelector("#yescomment").style.display = "block";
                                     document.querySelector("#done").style.display = "block";
-                                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/jQZtk-fCWQ4?start=37&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                    document.querySelector("#video").innerHTML='<iframe width="420" height="315" src="https://www.youtube.com/embed/jQZtk-fCWQ4?start=46&amp;end=55&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
                                 }
                             });
                 }

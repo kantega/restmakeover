@@ -5,7 +5,17 @@
     Collections may be too large to serve in a single response.
 </p>
 <p>
-    We need a simple and consistent way of showing results page-by-page
+    We need a simple and consistent way of showing results page-by-page.
+</p>
+<p>
+    There is no REST standard for this, but a good solution is to accept i.e. skip and limit as request parameters.
+</p>
+<p>
+    When you only return a single page of the result set, you should also include a header with links to the next and previous page.
+    Link headers are in this situation better than links in the json result set, since the result set is just an array.
+</p>
+<p>
+    <a target="_blank" href="http://tools.ietf.org/html/rfc5988&num;section-5.5">HTTP header links should look like this</a>.
 </p>
 
 <div id="requests" style="display: none">
@@ -118,13 +128,13 @@
                 document.querySelector("#nocomments").style.display="block";
                 forEach(document.querySelectorAll(".bloglink"), function(a) {
                     a.textContent = post.title;
-                    a.href = "/blog/#/blogs/" + encodeURIComponent(blog.name) +"/" + encodeURIComponent(post.title);
+                    a.href = "/blog/#/blogs/" + encodeURIComponent(blog.name) +"/posts/" + encodeURIComponent(post.title);
                 });
             } else {
 
                 document.querySelector("#requests").style.display="block";
 
-                var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(post.title) +"/comments?skip=0&limit=2";
+                var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/posts/" + encodeURIComponent(post.title) +"/comments?skip=0&limit=2";
                 document.querySelector("#request").textContent = "GET " + url;
 
                 analyze(url, function (xhr3) {
@@ -146,7 +156,7 @@
                         forEach(document.querySelectorAll(".numcomments"), function(e) {e.textContent = comments.length})
                     } else {
 
-                        var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/" + encodeURIComponent(post.title) +"/comments";
+                        var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/posts/" + encodeURIComponent(post.title) +"/comments";
 
                         analyze(url, function (xhr4) {
 
