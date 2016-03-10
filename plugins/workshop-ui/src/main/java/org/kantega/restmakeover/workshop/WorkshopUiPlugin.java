@@ -43,6 +43,7 @@ public class WorkshopUiPlugin {
         templateServlet("etags.html", "/workshop-ui/etags");
         templateServlet("enemy-of-the-state.html", "/workshop-ui/enemy-of-the-state");
         templateServlet("pagination.html", "/workshop-ui/pagination");
+        templateServlet("versioning.html", "/workshop-ui/versioning");
 
         servlets.add(servletBuilder.filter(new SessionAttributeTrackingFilter(), "/*", FilterPhase.PRE_USER));
 

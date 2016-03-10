@@ -2,269 +2,32 @@
 <h1 class="extruded">Versioning</h1>
 
 <p>
-    Your API
+    Providing your service over an API is very different from providing your service as web pages. If you change the protocol of your
+    service, even just a little bit, your clients code are going to break.
+</p>
+<p>
+    You will have to provide old versions of your service when you upgrade your API. You cannot expect your clients to
+    assemble an IT project and upgrade their code just because you decide that you want to introduce a new concept in
+    your API. A concept that they may not even need or want.
+</p>
+<p>
+    The most sensible way to achieve backwards compatibility with existing clients is to have a very distinct separation
+    between your API code and the implementation of the business logic.
+</p>
+<p>
+    A good approach is to have a version number as a part of the url. When you have to upgrade your API, just create a new
+    end point with a new version number for the upgraded version. Let both your old version and the new version call
+    the same business logic.
 </p>
 
 <p>
-    In your API, we delete a blog post by making a GET request to the blog post URL with the http parameter
-    "delete=true". This is a really, really bad practise.
+    The last task is to create a new version of your API where your don't identify blog posts by their title, but by a
+    unique, persistent id. You will have to make a new end-point with the version number as part of the URL. The old
+    API should still work so that you don't break existing clients.
 </p>
 
-<p>
-    HTTP provides the verbs GET, PUT, DELETE and POST that should be used to get, update, delete and create resource
-    instances. You should always use
-<ul>
-    <li>GET to retrieve data</li>
-    <li>PUT to update existing data</li>
-    <li>DELETE to delete data</li>
-    <li>POST to insert new data</li>
-</ul>
-</p>
+<img src="/assets/workshopui/versioning.png" style="width: 100%"/>
 
 
-<p>
-    Your goal in this task is to
-<ul>
-    <li>remove the bad code that deletes the blog post when the user makes an HTTP GET request</li>
-    <li>write new code that deletes the blog post when the user makes an HTTP DELETE request</li>
-</ul>
-</p>
-
-<pre id="request1"></pre>
-<pre id="response1"></pre>
-
-<pre id="request2" style="display: none"></pre>
-<pre id="response2" style="display: none"></pre>
-
-<pre id="request3" style="display: none"></pre>
-<pre id="response3" style="display: none"></pre>
-
-<pre id="request4" style="display: none"></pre>
-<pre id="response4" style="display: none"></pre>
-
-</div>
-<div class="panel panel-default results" style="position: fixed;bottom:0; right:20px" id="testResultsApp">
-    <div class="panel-heading">
-        <div class="panel-title">Test results:</div>
-    </div>
-    <div class="panel-body" id="resultBody">
-        <p id="yesetag" style="display: none">
-            <span class="label label-success">YES!</span> Your API responds with an ETag
-        </p>
-
-        <p id="noetag" style="display: none">
-            <span class="label label-danger">FAIL</span> Your API does not respond with an ETag
-        </p>
-
-        <p id="noetagchanged" style="display: none">
-            <span class="label label-danger">FAIL</span> The ETag did not change, even if the content changed.
-        </p>
-
-        <p id="noassistantchanged" style="display: none">
-            <span class="label label-danger">FAIL</span> Your assistant was unable to update the blog post!
-        </p>
-
-        <p id="yes412" style="display: none">
-            <span class="label label-success">YES!</span> Your API responded with 412 when the ETag is not current
-        </p>
-
-        <p id="no412" style="display: none">
-            <span class="label label-danger">FAIL</span> Your API should respond with 412 when the ETag is not current
-        </p>
-
-        <p id="yesdelete" style="display: none">
-            <span class="label label-success">YES!</span> A request with HTTP verb DELETE does delete a blog post
-        </p>
-
-        <p id="nodelete" style="display: none">
-            <span class="label label-danger">FAIL</span> A request with HTTP verb DELETE does not delete a blog post
-        </p>
-
-        <div id="done" style="display: none;">
-            <div id="video"></div>
-            <p></p>
-
-            <p>
-                <a href="caching">Next task</a>
-            </p>
-        </div>
-    </div>
-</div>
-
-
-<script>
-
-    function forEach(obj, each) {
-        for (var i = 0; i < obj.length; i++) {
-            each(obj[i]);
-        }
-    }
-
-    function get(url, ready) {
-        var xhr = new XMLHttpRequest();
-        var uri = encodeURI(url);
-
-        xhr.open("GET", uri, true);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
-                ready(xhr);
-            }
-        }
-        xhr.send(null);
-    }
-
-    function deleteCall(url, ready) {
-        var xhr = new XMLHttpRequest();
-        var uri = encodeURI(url);
-
-        xhr.open("DELETE", uri, true);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
-                ready(xhr);
-            }
-        }
-        xhr.send(null);
-    }
-
-    function post(url, data, ready) {
-        var xhr = new XMLHttpRequest();
-        var uri = encodeURI(url);
-
-        xhr.open("POST", uri, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
-                ready(xhr);
-            }
-        };
-        var body = JSON.stringify(data);
-        xhr.send(body);
-    }
-
-    function put(url, data, etag, ready) {
-        var xhr = new XMLHttpRequest();
-        var uri = encodeURI(url);
-
-        xhr.open("PUT", uri, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("If-Match", etag);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
-                ready(xhr);
-            }
-        };
-        var body = JSON.stringify(data);
-        xhr.send(body);
-    }
-
-    function printResponse(xhr4, selector) {
-        var txt = "HTTP " + xhr4.status + " " + xhr4.statusText;
-
-        var headers = xhr4.getAllResponseHeaders();
-        txt += "\n" + headers;
-
-        txt += "\n" + xhr4.responseText;
-
-        document.querySelector(selector).innerText = txt;
-        document.querySelector(selector).style.display = 'block';
-    }
-
-    function printRequest(html, selector) {
-        document.querySelector(selector).innerHTML = html;
-        document.querySelector(selector).style.display = 'block';
-    }
-
-    function endswith(s, suffix) {
-        return s.indexOf(suffix, s.length - suffix.length) !== -1;
-    }
-
-    get("/r/blogs", function (xhr) {
-
-        var blogs = JSON.parse(xhr.responseText);
-        var blog = blogs[0];
-
-        get("/r/blogs/" + blog.name + "/posts", function (xhr2) {
-
-            var posts = JSON.parse(xhr2.responseText);
-            var post = posts[0];
-
-            printRequest("GET " + "/r/blogs/" + blog.name + "/" + post.title, "#request1");
-
-            get("/r/blogs/" + blog.name + "/" + post.title, function (xhr3) {
-
-                printResponse(xhr3, "#response1");
-                var firstEtag = xhr3.getResponseHeader("ETag");
-
-                if(!firstEtag) {
-                    document.querySelector("#noetag").style.display = "block";
-                } else {
-                    document.querySelector("#yesetag").style.display = "block";
-
-                    var newText = endswith(post.content, 'Not purring ...') ? 'Not growling ...' : 'Not purring ...';
-                    var postByAnotherClient = {
-                        title: post.title,
-                        content: post.content + "\n\n" + newText
-                    };
-
-                    printRequest("Meanwhile ...\nYour assistant editor updated the same blog post from his home office", "#request2");
-                    put("/r/blogs/" + blog.name + "/" + post.title, postByAnotherClient, firstEtag, function (xhr4) {
-
-                        if(xhr4.status !== 200) {
-                            printResponse(xhr4, "#response2");
-                            document.querySelector("#noassistantchanged").style.display = "block";
-                        } else {
-
-                            get("/r/blogs/" + blog.name + "/" + post.title, function (xhr4) {
-
-                                var anotherClientsEtag = xhr4.getResponseHeader("ETag");
-                                printRequest("Meanwhile ...\nYour assistant editor updated the same blog post from his home office\nThe Etag is now " + anotherClientsEtag, "#request2");
-                                if(anotherClientsEtag == firstEtag) {
-                                    document.querySelector("#noetagchanged").style.display = "block";
-                                    printRequest("GET /r/blogs/" + blog.name + "/" + post.title, "#request3");
-                                    printResponse(xhr4, "#response3");
-                                } else {
-
-                                    var newText = endswith(post.content, 'What a surprise!') ? 'This is really true!' : 'What a surprise!';
-                                    var postByThisClient = {
-                                        title: post.title,
-                                        content: post.content + "\n\n" + newText
-                                    };
-
-                                    printRequest("PUT /r/blogs/" + blog.name + "/" + post.title + '\nIf-Match: ' + firstEtag + '\n\n' + JSON.stringify(postByThisClient), "#request4");
-                                    put("/r/blogs/" + blog.name + "/" + post.title, postByThisClient, firstEtag, function (xhr5) {
-
-                                        printResponse(xhr5, "#response4");
-
-                                        if (xhr5.status != 412) {
-                                            document.querySelector("#no412").style.display = "block";
-                                        } else {
-                                            document.querySelector("#yes412").style.display = "block";
-
-                                            document.querySelector("#done").style.display = "block";
-                                            document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/pLCOTpjBGcs?start=15&amp;end=30&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
-
-                                        }
-
-                                    });
-
-                                }
-                            });
-
-                        }
-
-
-
-
-
-
-                    });
-                }
-            });
-
-        });
-    });
-
-
-</script>
 #end
 #parse("design.html")
