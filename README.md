@@ -19,9 +19,11 @@ The code you are supposed to edit is in plugins/rest. Feel free to look into the
 ## Build
 Build the project using maven:
 
-<pre>
+<pre>                 
 cd restmakeover
-mvn clean install
+
+(Windows)   mvnw clean install 
+(Linux/Mac) ./mvnw clean install 
 </pre>
 
 ## Start
@@ -32,8 +34,8 @@ The application server will reload the code when you write, so you will never ha
 NB! Maven requires you to set JAVA_HOME before you start. Take a look into the [JAVA_HOME.md](JAVA_HOME.md) file if you run into problems with this.
 
 <pre>
-cd webapps
-mvn jetty:run
+(Windows)   mvnw -f webapp/pom.xml jetty:run
+(Linux/Mac) ./mvnw -f webapp/pom.xml jetty:run
 </pre>
 
 ## GO
