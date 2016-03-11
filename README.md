@@ -7,7 +7,7 @@ Check out the repository to a new directory on your own computer. You may use an
 then this is the command to run:
 
 <pre>
-git clone git@github.com:kantega/restmakeover.git
+git clone https://github.com/kantega/restmakeover.git
 </pre>
 
 ## Open the code
