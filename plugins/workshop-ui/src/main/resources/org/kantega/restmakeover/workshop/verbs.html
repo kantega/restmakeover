@@ -165,7 +165,7 @@
         catch (err) {
             return false;
         }
-        return response.contains("{");
+        return response === undefined || response.contains("{");
     }
     get("/r/blogs", function (xhr) {
 
