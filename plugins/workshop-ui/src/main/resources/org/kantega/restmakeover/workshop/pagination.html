@@ -11,11 +11,13 @@
     There is no REST standard for this, but a good solution is to accept i.e. skip and limit as request parameters.
 </p>
 <p>
-    When you only return a single page of the result set, you should also include a header with links to the next and previous page.
+    When you only return a single page of the result set, you should also include a header with links to the next and
+    previous page.
     Link headers are in this situation better than links in the json result set, since the result set is just an array.
 </p>
 <p>
-    <a target="_blank" href="http://tools.ietf.org/html/rfc5988&num;section-5.5">HTTP header links should look like this</a>.
+    <a target="_blank" href="http://tools.ietf.org/html/rfc5988&num;section-5.5">HTTP header links should look like
+        this</a>.
 </p>
 
 <div id="requests" style="display: none">
@@ -40,11 +42,13 @@
     <div class="panel-body" id="resultBody">
 
         <p id="nocomments" style="display: none">
-            <span class="label label-danger">FAIL</span> Your blogpost <a class="bloglink" target="_blank" href="#"></a> needs at least 5 comments before you can continue with this task.
+            <span class="label label-danger">FAIL</span> Your blogpost <a class="bloglink" target="_blank" href="#"></a>
+            needs at least 5 comments before you can continue with this task.
         </p>
 
         <p id="notwo" style="display: none">
-            <span class="label label-danger">FAIL</span> Expected to see exactly 2 comments for a request with <code>limit=2</code>, instead got <span class="numcomments">0</span>
+            <span class="label label-danger">FAIL</span> Expected to see exactly 2 comments for a request with <code>limit=2</code>,
+            instead got <span class="numcomments">0</span>
         </p>
 
         <p id="yestwo" style="display: none">
@@ -52,7 +56,8 @@
         </p>
 
         <p id="nodefault" style="display: none">
-            <span class="label label-danger">FAIL</span> Expected comments resource to still work without limit or skip parameters.
+            <span class="label label-danger">FAIL</span> Expected comments resource to still work without limit or skip
+            parameters.
         </p>
 
 
@@ -61,30 +66,41 @@
         </p>
 
         <p id="yesnext" style="display: none">
-            <span class="label label-success">YES!</span> You have a <code>Link</code> header for <code>rel="next"</code>
+            <span class="label label-success">YES!</span> You have a <code>Link</code> header for
+            <code>rel="next"</code>
         </p>
 
+        <p id="nolinkformat" style="display: none">
+            <span class="label label-danger">FAIL</span> Could not parse <code>Link</code> header. Do you adhere to <a
+                href="https://tools.ietf.org/html/rfc5988">RFC 5988</a>?
+        </p>
+
+
         <p id="noparams" style="display: none">
-            <span class="label label-danger">FAIL</span> Expected your rel="next" URL to have <code>skip=2</code> and <code>limit=2</code>, instead saw <span class="nexturl"></span>
+            <span class="label label-danger">FAIL</span> Expected your rel="next" URL to have <code>skip=2</code> and
+            <code>limit=2</code>, instead saw <span class="nexturl"></span>
         </p>
 
         <p id="yesparams" style="display: none">
-            <span class="label label-success">YES!</span> Your rel="next" URL has <code>skip=2</code> and <code>limit=2</code>
+            <span class="label label-success">YES!</span> Your rel="next" URL has <code>skip=2</code> and
+            <code>limit=2</code>
         </p>
 
         <p id="novalidnext" style="display: none">
-            <span class="label label-danger">FAIL</span> When following your <code>rel="next"</code> link, we expected 200, but got <span class="nextstatus"></span>
+            <span class="label label-danger">FAIL</span> When following your <code>rel="next"</code> link, we expected
+            200, but got <span class="nextstatus"></span>
         </p>
 
         <p id="noprev" style="display: none">
-            <span class="label label-danger">FAIL</span> When following your <code>rel="next"</code> link, we expected to find a <code>rel="prev"</code> link header with <code>skip=0</code> and <code>limit=2</code>
+            <span class="label label-danger">FAIL</span> When following your <code>rel="next"</code> link, we expected
+            to find a <code>rel="prev"</code> link header with <code>skip=0</code> and <code>limit=2</code>
         </p>
+
 
         <p id="yesprev" style="display: none">
-            <span class="label label-success">YES!</span> When following your <code>rel="next"</code> link, we found a <code>rel="prev"</code> link with <code>skip=0</code> and <code>limit=2</code>
+            <span class="label label-success">YES!</span> When following your <code>rel="next"</code> link, we found a
+            <code>rel="prev"</code> link with <code>skip=0</code> and <code>limit=2</code>
         </p>
-
-
 
 
         <div id="done" style="display: none;">
@@ -102,7 +118,7 @@
 <script>
 
     function forEach(obj, each) {
-        for(var i = 0; i < obj.length; i++) {
+        for (var i = 0; i < obj.length; i++) {
             each(obj[i]);
         }
     }
@@ -117,24 +133,24 @@
         xhr.send(null);
     }
 
-    analyze("/r/blogs",function (xhr1) {
+    analyze("/r/blogs", function (xhr1) {
         var blogs = JSON.parse(xhr1.responseText);
         var blog = blogs[0];
-        analyze("/r/blogs/" + encodeURIComponent(blog.name) +"/posts",function (xhr2) {
+        analyze("/r/blogs/" + encodeURIComponent(blog.name) + "/posts", function (xhr2) {
 
             var posts = JSON.parse(xhr2.responseText)
             var post = posts[0];
-            if(post.commentCount < 5) {
-                document.querySelector("#nocomments").style.display="block";
-                forEach(document.querySelectorAll(".bloglink"), function(a) {
+            if (post.commentCount < 5) {
+                document.querySelector("#nocomments").style.display = "block";
+                forEach(document.querySelectorAll(".bloglink"), function (a) {
                     a.textContent = post.title;
-                    a.href = "/blog/#/blogs/" + encodeURIComponent(blog.name) +"/posts/" + encodeURIComponent(post.title);
+                    a.href = "/blog/#/blogs/" + encodeURIComponent(blog.name) + "/posts/" + encodeURIComponent(post.title);
                 });
             } else {
 
-                document.querySelector("#requests").style.display="block";
+                document.querySelector("#requests").style.display = "block";
 
-                var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/posts/" + encodeURIComponent(post.title) +"/comments?skip=0&limit=2";
+                var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) + "/posts/" + encodeURIComponent(post.title) + "/comments?skip=0&limit=2";
                 document.querySelector("#request").textContent = "GET " + url;
 
                 analyze(url, function (xhr3) {
@@ -145,22 +161,24 @@
 
 
                     var headers = xhr3.getAllResponseHeaders();
-                    txt +="\n" + headers;
+                    txt += "\n" + headers;
 
-                    txt +="\n" + xhr3.responseText;
+                    txt += "\n" + xhr3.responseText;
 
-                    document.querySelector("#response").innerText= txt;
+                    document.querySelector("#response").innerText = txt;
 
                     if (comments.length != 2) {
                         document.querySelector("#notwo").style.display = "block";
-                        forEach(document.querySelectorAll(".numcomments"), function(e) {e.textContent = comments.length})
+                        forEach(document.querySelectorAll(".numcomments"), function (e) {
+                            e.textContent = comments.length
+                        })
                     } else {
 
-                        var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) +"/posts/" + encodeURIComponent(post.title) +"/comments";
+                        var url = "/r/blogs/" + encodeURIComponent(blogs[0].name) + "/posts/" + encodeURIComponent(post.title) + "/comments";
 
                         analyze(url, function (xhr4) {
 
-                            if(xhr4.status != 200) {
+                            if (xhr4.status != 200) {
                                 document.querySelector("#nodefault").style.display = "block";
                                 document.querySelector("#request3").innerText = "GET " + url;
                                 document.querySelector("#request3").style.display = "block";
@@ -169,27 +187,36 @@
                                 var headers = xhr4.getAllResponseHeaders();
                                 var txt = "HTTP " + xhr4.status + " " + xhr4.statusText;
 
-                                txt +="\n" + headers;
+                                txt += "\n" + headers;
 
-                                txt +="\n" + xhr4.responseText;
+                                txt += "\n" + xhr4.responseText;
 
                                 document.querySelector("#response3").innerText = txt;
 
 
                             } else {
                                 document.querySelector("#yestwo").style.display = "block";
+                                var links;
+                                try {
+                                    links = parseLinks(xhr3.getResponseHeader("Link"));
+                                }
+                                catch (err) {
+                                    document.querySelector("#nolinkformat").style.display = "block";
+                                    return;
+                                }
 
-                                var links = parseLinks(xhr3.getResponseHeader("Link"));
 
                                 var next = links["next"];
-                                if(!next ) {
+                                if (!next) {
                                     document.querySelector("#nonext").style.display = "block";
 
                                 } else {
                                     document.querySelector("#yesnext").style.display = "block";
 
-                                    forEach(document.querySelectorAll(".nexturl"), function(e) {e.innerText = next.url});
-                                    if(next.params["skip"] !== "2" || next.params["limit"] !== "2") {
+                                    forEach(document.querySelectorAll(".nexturl"), function (e) {
+                                        e.innerText = next.url
+                                    });
+                                    if (next.params["skip"] !== "2" || next.params["limit"] !== "2") {
 
                                         document.querySelector("#noparams").style.display = "block";
                                     } else {
@@ -198,39 +225,50 @@
                                         document.querySelector("#second").style.display = "block";
 
                                         var geturl = next.url;
-                                        if(geturl.indexOf("http://") == 0) {
+                                        if (geturl.indexOf("http://") == 0) {
                                             geturl = geturl.substr(next.url.indexOf("/r/"));
                                         }
                                         document.querySelector("#request2").innerText = "GET " + geturl;
 
-                                        analyze(next.url, function(xhr5) {
+                                        analyze(next.url, function (xhr5) {
 
-                                            var headers = xhr5.getAllResponseHeaders();
-                                            var txt = "HTTP " + xhr5.status + " " + xhr5.statusText;
+                                                    var headers = xhr5.getAllResponseHeaders();
+                                                    var txt = "HTTP " + xhr5.status + " " + xhr5.statusText;
 
-                                            txt +="\n" + headers;
+                                                    txt += "\n" + headers;
 
-                                            txt +="\n" + xhr5.responseText;
+                                                    txt += "\n" + xhr5.responseText;
 
-                                            document.querySelector("#response2").innerText = txt;
+                                                    document.querySelector("#response2").innerText = txt;
 
-                                            if(xhr5.status != 200) {
-                                                document.querySelector("#novalidnext").style.display = "block";
-                                                forEach(document.querySelectorAll(".nextstatus"), function(e) {e.innerHTML = xhr5.status});
-                                            } else {
+                                                    if (xhr5.status != 200) {
+                                                        document.querySelector("#novalidnext").style.display = "block";
+                                                        forEach(document.querySelectorAll(".nextstatus"), function (e) {
+                                                            e.innerHTML = xhr5.status
+                                                        });
+                                                    } else {
 
-                                                var links = parseLinks(xhr5.getResponseHeader("Link"));
+                                                        var links;
+                                                        try {
+                                                            links = parseLinks(xhr5.getResponseHeader("Link"));
+                                                        }
+                                                        catch (err) {
+                                                            document.querySelector("#nolinkformat").style.display = "block";
+                                                            return;
+                                                        }
 
-                                                var prev = links["prev"];
-                                                if(!prev ) {
-                                                    document.querySelector("#noprev").style.display = "block";
-                                                } else {
-                                                    document.querySelector("#yesprev").style.display = "block";
-                                                    document.querySelector("#done").style.display = "block";
-                                                    document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/UIrEM_9qvZU?start=626&amp;end=660&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
+                                                        var prev = links["prev"];
+                                                        if (!prev) {
+                                                            document.querySelector("#noprev").style.display = "block";
+                                                        } else {
+                                                            document.querySelector("#yesprev").style.display = "block";
+                                                            document.querySelector("#done").style.display = "block";
+                                                            document.querySelector("#video").innerHTML = '<iframe width="420" height="315" src="https://www.youtube.com/embed/UIrEM_9qvZU?start=626&amp;end=660&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>';
+                                                        }
+                                                    }
                                                 }
-                                            }
-                                        });
+                                        );
 
                                     }
                                 }
@@ -239,21 +277,22 @@
                         });
 
 
-
-
                     }
-                });
+                })
+                ;
             }
-        });
-    });
+        })
+        ;
+    })
+    ;
 
 
     function parseLinks(header) {
         var links = {};
-        if(header) {
+        if (header) {
             var split = header.split(",")
             var pattern = /.*<(.*)>; *rel="(.*)"/g;
-            for(var i = 0; i < split.length; i++) {
+            for (var i = 0; i < split.length; i++) {
                 pattern.lastIndex = 0;
                 var groups = pattern.exec(split[i]);
                 var rel = groups[2];
@@ -261,10 +300,10 @@
 
                 var link = {url: url, params: {}};
 
-                if(url.indexOf("?") != -1) {
-                    var qstring = url.substr(url.indexOf("?")+1);
+                if (url.indexOf("?") != -1) {
+                    var qstring = url.substr(url.indexOf("?") + 1);
                     var params = qstring.split("&");
-                    for(var p = 0; p < params.length; p++) {
+                    for (var p = 0; p < params.length; p++) {
                         var name = params[p].split("=")[0];
                         var val = params[p].split("=")[1];
 
@@ -272,7 +311,7 @@
                     }
                 }
 
-                links[rel] = link ;
+                links[rel] = link;
             }
         }
 
